@@ -3,25 +3,90 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Updated to match CollectorCrypt color scheme: dark black bg, bright orange, cyan, and green accents */
+  --background: 240 10% 3.9%; /* Very dark, almost black */
+  --foreground: 0 0% 98%; /* White */
+  --card: 240 10% 3.9%; /* Slightly lighter than background */
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 20 100% 63%; /* Bright orange #FF6B35 */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 186 100% 69%; /* Bright cyan #00D9FF */
+  --accent-foreground: 240 10% 3.9%; /* Dark text on cyan */
+  --success: 145 100% 47%; /* Bright green #00FF7B */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 20 100% 63%;
+  --chart-1: 20 100% 63%;
+  --chart-2: 186 100% 69%;
+  --chart-3: 145 100% 47%;
+  --chart-4: 320 100% 63%;
+  --chart-5: 180 100% 70%;
+  --radius: 0.75rem;
+  --sidebar: 240 3.7% 15.9%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 20 100% 63%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 20 100% 63%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
+/* Enhanced animations and added decorative sparkle effects */
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 20px -10px hsl(var(--primary));
+    }
+    to {
+      box-shadow: 0 0 40px 0px hsl(var(--primary));
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
