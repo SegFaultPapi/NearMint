@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useUser, useClerk } from "@clerk/nextjs"
 import { cn } from "@/lib/utils"
 import { LayoutDashboard, Coins, TrendingUp, Store, Wallet, Settings, LogOut, Sparkles, Scan } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -20,7 +21,14 @@ const navigation = [
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { user } = useUser()
+  const { signOut } = useClerk()
   const { address, disconnect } = useWallet()
+
+  const handleSignOut = async () => {
+    disconnect() // Desconectar wallet primero
+    await signOut() // Luego cerrar sesión de Clerk
+  }
 
   return (
     <div className="flex h-screen w-64 flex-col border-r border-white/10 bg-black/40 backdrop-blur-xl">
@@ -81,20 +89,24 @@ export function AppSidebar() {
       <div className="border-t border-white/10 p-4">
         <div className="mb-3 flex items-center gap-3 rounded-lg bg-white/5 p-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600">
-            <span className="text-sm font-bold text-white">0x</span>
+            <span className="text-sm font-bold text-white">
+              {user?.firstName?.charAt(0) || user?.emailAddresses[0]?.emailAddress.charAt(0).toUpperCase() || "U"}
+            </span>
           </div>
           <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium text-white">{address || "0x742d...3a9f"}</p>
-            <p className="text-xs text-gray-400">Connected</p>
+            <p className="text-sm font-medium text-white truncate">
+              {user?.firstName || user?.emailAddresses[0]?.emailAddress.split('@')[0]}
+            </p>
+            <p className="text-xs text-gray-400">{address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "No wallet"}</p>
           </div>
         </div>
         <Button
-          onClick={disconnect}
+          onClick={handleSignOut}
           variant="ghost"
           className="w-full justify-start gap-2 text-gray-400 hover:bg-red-500/10 hover:text-red-400"
         >
           <LogOut className="h-4 w-4" />
-          Disconnect
+          Cerrar Sesión
         </Button>
       </div>
     </div>

@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useUser } from "@clerk/nextjs"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Shield, Zap, Globe, Lock, TrendingUp, Wallet, CheckCircle2 } from "lucide-react"
@@ -8,11 +10,19 @@ import { WalletConnectDialog } from "@/components/wallet-connect-dialog"
 import { useWallet } from "@/contexts/wallet-context"
 
 export default function Home() {
+  const router = useRouter()
+  const { isSignedIn } = useUser()
   const [showWalletDialog, setShowWalletDialog] = useState(false)
   const { connect } = useWallet()
 
   const handleStartNow = () => {
-    setShowWalletDialog(true)
+    // Si el usuario ya está autenticado, ir directo al dashboard
+    if (isSignedIn) {
+      router.push('/dashboard')
+    } else {
+      // Si no está autenticado, redirigir a sign-in
+      router.push('/sign-in')
+    }
   }
 
   const handleConnect = () => {
