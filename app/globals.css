@@ -90,3 +90,72 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
+
+/* Clerk Component Customization */
+@layer components {
+  /* Asegurar que los componentes de Clerk hereden el tema */
+  .cl-internal-b3fm6y {
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  /* Mejorar la apariencia de los inputs de Clerk */
+  .cl-formFieldInput {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .cl-formFieldInput:focus {
+    border-color: hsl(var(--primary)) !important;
+    box-shadow: 0 0 0 2px hsla(var(--primary), 0.2) !important;
+  }
+  
+  /* Botones de Clerk */
+  .cl-formButtonPrimary {
+    background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary) / 0.9)) !important;
+    box-shadow: 0 10px 40px hsla(var(--primary), 0.5) !important;
+  }
+  
+  .cl-formButtonPrimary:hover {
+    box-shadow: 0 20px 60px hsla(var(--primary), 0.6) !important;
+    transform: scale(1.05);
+  }
+  
+  /* Links de Clerk */
+  .cl-footerActionLink,
+  .cl-identityPreviewEditButton,
+  .cl-formResendCodeLink {
+    color: hsl(var(--primary)) !important;
+  }
+  
+  .cl-footerActionLink:hover,
+  .cl-identityPreviewEditButton:hover,
+  .cl-formResendCodeLink:hover {
+    color: hsl(var(--primary) / 0.8) !important;
+  }
+  
+  /* Botones sociales */
+  .cl-socialButtonsBlockButton {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+  }
+  
+  .cl-socialButtonsBlockButton:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: hsla(var(--primary), 0.5) !important;
+    transform: scale(1.05);
+  }
+  
+  /* Card principal de Clerk */
+  .cl-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+  }
+  
+  /* User button en el sidebar (si lo usas) */
+  .cl-userButtonBox {
+    backdrop-filter: blur(10px);
+  }
+}
