@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { WalletProvider } from "@/contexts/wallet-context"
+import { ClerkProvider } from "@clerk/nextjs"
+import { ChipiProvider } from "@chipi-stack/nextjs"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,9 +23,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} antialiased`}>
-      <body>
-        <WalletProvider>{children}</WalletProvider>
-      </body>
+      <ClerkProvider>
+        <ChipiProvider>
+          <body>
+            <WalletProvider>{children}</WalletProvider>
+          </body>
+        </ChipiProvider>
+      </ClerkProvider>
     </html>
   )
 }
