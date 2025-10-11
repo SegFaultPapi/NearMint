@@ -10,7 +10,7 @@ interface WalletContextType {
   hasWallet: boolean
   connect: () => void
   disconnect: () => void
-  setWalletAddress: (address: string) => void
+  setWalletAddress: (address: string) => Promise<void>
   checkWalletStatus: () => Promise<void>
 }
 
@@ -38,7 +38,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const checkWalletStatus = async () => {
     console.log('🔍 Verificando estado de wallet para usuario:', user?.id)
     
-    // Verificar si el localStorage pertenece al usuario actual
+    // Primero verificar Clerk metadata
+    const clerkMetadata = user?.unsafeMetadata as { hasWallet?: boolean; walletAddress?: string } | undefined
+    console.log('📋 Clerk metadata:', clerkMetadata)
+    
+    // Verificar localStorage
     const storedUserId = localStorage.getItem("chipi_wallet_user_id")
     const storedAddress = localStorage.getItem("chipi_wallet_address")
     const storedConnected = localStorage.getItem("chipi_wallet_connected")
@@ -62,7 +66,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return
     }
     
-    // Si hay dirección y está marcada como conectada
+    // Si hay dirección en localStorage y está conectada
     if (storedAddress && storedConnected === "true") {
       // Si no hay userId guardado (usuarios antiguos), guardarlo ahora
       if (!storedUserId && user?.id) {
@@ -70,28 +74,37 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("chipi_wallet_user_id", user.id)
       }
       
-      console.log('✅ Cargando wallet guardada')
+      console.log('✅ Cargando wallet desde localStorage')
       setAddress(storedAddress)
       setIsConnected(true)
       setHasWallet(true)
       return
     }
 
-    // Si no hay datos, el usuario no tiene wallet
+    // Si no hay en localStorage pero SÍ en Clerk metadata
+    if (clerkMetadata?.hasWallet && clerkMetadata?.walletAddress) {
+      console.log('♻️ Recuperando wallet desde Clerk metadata')
+      const address = clerkMetadata.walletAddress
+      
+      // Restaurar en localStorage
+      localStorage.setItem("chipi_wallet_address", address)
+      localStorage.setItem("chipi_wallet_connected", "true")
+      if (user?.id) {
+        localStorage.setItem("chipi_wallet_user_id", user.id)
+      }
+      
+      setAddress(address)
+      setIsConnected(true)
+      setHasWallet(true)
+      console.log('✅ Wallet recuperada exitosamente')
+      return
+    }
+
+    // Si no hay datos en ningún lado, el usuario no tiene wallet
     console.log('❌ No se encontró wallet')
     setAddress(null)
     setIsConnected(false)
     setHasWallet(false)
-
-    // TODO: Aquí puedes hacer una llamada a tu API para verificar si el usuario tiene una wallet en ChipiSDK
-    // Ejemplo:
-    // const response = await fetch(`/api/wallet/check?userId=${user?.id}`)
-    // const { hasWallet, address } = await response.json()
-    // if (hasWallet) {
-    //   setAddress(address)
-    //   setHasWallet(true)
-    //   setIsConnected(true)
-    // }
   }
 
   const connect = () => {
@@ -106,7 +119,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const setWalletAddress = (newAddress: string) => {
+  const setWalletAddress = async (newAddress: string) => {
     setAddress(newAddress)
     setIsConnected(true)
     setHasWallet(true)
@@ -114,6 +127,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("chipi_wallet_connected", "true")
     if (user?.id) {
       localStorage.setItem("chipi_wallet_user_id", user.id)
+    }
+    
+    // También actualizar Clerk metadata si es posible
+    if (user) {
+      try {
+        await user.update({
+          unsafeMetadata: {
+            hasWallet: true,
+            walletAddress: newAddress,
+            walletUpdatedAt: new Date().toISOString(),
+          }
+        })
+        console.log('✅ Wallet guardada en Clerk metadata desde contexto')
+      } catch (error) {
+        console.error('❌ Error al actualizar Clerk metadata:', error)
+        // No interrumpir el flujo si falla
+      }
     }
   }
 

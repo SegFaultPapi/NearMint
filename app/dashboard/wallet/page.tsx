@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Wallet, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, Copy, ExternalLink, Shield, AlertCircle } from "lucide-react"
+import { Wallet, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, Copy, ExternalLink, Shield, AlertCircle, RefreshCw } from "lucide-react"
 import { useWallet } from "@/contexts/wallet-context"
 import { useUser } from "@clerk/nextjs"
 
@@ -44,9 +44,17 @@ const transactions = [
 ]
 
 export default function WalletPage() {
-  const { address, isConnected, hasWallet } = useWallet()
+  const { address, isConnected, hasWallet, checkWalletStatus } = useWallet()
   const { user } = useUser()
   const [copied, setCopied] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+
+  // Actualizar timestamp cuando se conecta
+  React.useEffect(() => {
+    if (hasWallet && address) {
+      setLastUpdated(new Date())
+    }
+  }, [hasWallet, address])
 
   const handleCopy = () => {
     if (address) {
@@ -56,9 +64,31 @@ export default function WalletPage() {
     }
   }
 
+  const handleRefresh = async () => {
+    await checkWalletStatus()
+    setLastUpdated(new Date())
+  }
+
   const truncateAddress = (addr: string) => {
     if (!addr) return ""
     return `${addr.slice(0, 6)}...${addr.slice(-6)}`
+  }
+
+  const formatLastUpdated = () => {
+    if (!lastUpdated) return "Nunca"
+    const now = new Date()
+    const diff = now.getTime() - lastUpdated.getTime()
+    const minutes = Math.floor(diff / 60000)
+    
+    if (minutes < 1) return "Hace un momento"
+    if (minutes === 1) return "Hace 1 minuto"
+    if (minutes < 60) return `Hace ${minutes} minutos`
+    
+    const hours = Math.floor(minutes / 60)
+    if (hours === 1) return "Hace 1 hora"
+    if (hours < 24) return `Hace ${hours} horas`
+    
+    return lastUpdated.toLocaleDateString('es-ES')
   }
 
   return (
@@ -74,9 +104,20 @@ export default function WalletPage() {
         <div className="p-8">
           {/* Header con Estado */}
           <div className="mb-6 flex items-center justify-between">
-            <div>
-              <p className="mb-2 text-sm text-gray-300">Estado de tu Cuenta</p>
-              <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <p className="text-sm text-gray-300">Estado de tu Cuenta</p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleRefresh}
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                  title="Actualizar"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap">
                 <p className="text-3xl font-bold text-white">
                   {hasWallet ? "Configurada" : "Sin Configurar"}
                 </p>
@@ -90,22 +131,23 @@ export default function WalletPage() {
                   {isConnected ? (
                     <>
                       <CheckCircle2 className="mr-1 h-3 w-3" />
-                      Conectada
+                      Activa
                     </>
                   ) : (
                     <>
-                      <AlertCircle className="mr-1 h-3 w-3" />
-                      Desconectada
+                      <Clock className="mr-1 h-3 w-3" />
+                      Última actualización: {formatLastUpdated()}
                     </>
                   )}
                 </Badge>
               </div>
             </div>
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-purple-600">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-purple-600 flex-shrink-0">
               <Shield className="h-8 w-8 text-white" />
             </div>
           </div>
 
+          {/* Mostrar información si tiene wallet, independientemente del estado de conexión */}
           {hasWallet && address ? (
             <>
               {/* Dirección de Wallet */}
@@ -196,19 +238,38 @@ export default function WalletPage() {
         </div>
       </Card>
 
-      {/* Transaction History */}
+      {/* Transaction History - Siempre mostrar si tiene wallet */}
       {hasWallet && address ? (
         <Card className="border-white/10 bg-black/40 p-6 backdrop-blur-xl">
-          <h2 className="mb-6 text-2xl font-bold text-white">Historial de Transacciones</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">Historial de Transacciones</h2>
+            {!isConnected && (
+              <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 border">
+                <Clock className="mr-1 h-3 w-3" />
+                Última actualización: {formatLastUpdated()}
+              </Badge>
+            )}
+          </div>
 
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-gray-400" />
             </div>
             <p className="text-gray-400 mb-2">Aún no tienes transacciones</p>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm mb-4">
               Tus transacciones aparecerán aquí cuando empieces a usar NearMint
             </p>
+            {!isConnected && (
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                className="border-white/10 text-gray-400 hover:text-white hover:bg-white/5"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Actualizar Estado
+              </Button>
+            )}
           </div>
         </Card>
       ) : null}

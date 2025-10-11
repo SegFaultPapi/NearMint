@@ -35,9 +35,20 @@ export default function CreatePinPage() {
   // Solo después de que haya pasado el tiempo inicial
   useEffect(() => {
     if (isLoaded && shouldCheckWallet && hasWallet && step === "setup") {
+      console.log('⚠️ Usuario ya tiene wallet configurada, redirigiendo a dashboard')
       router.push("/dashboard")
     }
   }, [isLoaded, shouldCheckWallet, hasWallet, step, router])
+
+  // Debug: Log cuando se monta el componente
+  useEffect(() => {
+    console.log('🎯 CreatePin - Estado actual:', {
+      hasWallet,
+      shouldCheckWallet,
+      step,
+      userId: user?.id
+    })
+  }, [hasWallet, shouldCheckWallet, step, user?.id])
 
   // Si no hay usuario autenticado, redirigir a sign-in
   useEffect(() => {
@@ -95,9 +106,27 @@ export default function CreatePinPage() {
         bearerToken,
       })
 
-      // Guardar la configuración en el contexto
+      // Guardar la configuración en el contexto y Clerk metadata
       if (wallet?.wallet?.publicKey) {
-        setWalletAddress(wallet.wallet.publicKey)
+        console.log('💾 Guardando wallet en Clerk metadata...')
+        
+        // Guardar en Clerk metadata para persistir entre sesiones
+        try {
+          await user.update({
+            unsafeMetadata: {
+              hasWallet: true,
+              walletAddress: wallet.wallet.publicKey,
+              walletCreatedAt: new Date().toISOString(),
+            }
+          })
+          console.log('✅ Wallet guardada en Clerk metadata')
+        } catch (metadataError) {
+          console.error('❌ Error al guardar en Clerk metadata:', metadataError)
+          // Continuar aunque falle el metadata
+        }
+
+        // Guardar en contexto local
+        await setWalletAddress(wallet.wallet.publicKey)
         setStep("success")
 
         // Redirigir al dashboard después de 3 segundos
