@@ -1,0 +1,1 @@
+{"version":1,"contracts":[{"id":"frpb8cc94k71a","package_name":"nearmint_nft","contract_name":"NearMintNFT","module_path":"nearmint_nft::NearMintNFT","artifacts":{"sierra":"nearmint_nft_NearMintNFT.contract_class.json","casm":"nearmint_nft_NearMintNFT.compiled_contract_class.json"}}]}

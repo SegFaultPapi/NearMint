@@ -1,0 +1,4 @@
+[sncast.nearmint]
+account = "nearmint_deployer"
+network = "sepolia"
+
