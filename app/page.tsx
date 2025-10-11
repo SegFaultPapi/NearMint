@@ -13,14 +13,20 @@ export default function Home() {
   const router = useRouter()
   const { isSignedIn } = useUser()
   const [showWalletDialog, setShowWalletDialog] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
   const { connect } = useWallet()
 
   const handleStartNow = () => {
+    console.log('Botón clickeado, isSignedIn:', isSignedIn)
+    setIsNavigating(true)
+    
     // Si el usuario ya está autenticado, ir directo al dashboard
     if (isSignedIn) {
+      console.log('Usuario autenticado, navegando al dashboard')
       router.push('/dashboard')
     } else {
       // Si no está autenticado, redirigir a sign-in
+      console.log('Usuario no autenticado, navegando a sign-in')
       router.push('/sign-in')
     }
   }
@@ -69,9 +75,10 @@ export default function Home() {
             </a>
             <Button
               onClick={handleStartNow}
-              className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-full px-10 py-6 text-base shadow-xl shadow-primary/50 font-semibold hover:shadow-2xl hover:shadow-primary/60 transition-smooth hover:scale-105"
+              disabled={isNavigating}
+              className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-full px-10 py-6 text-base shadow-xl shadow-primary/50 font-semibold hover:shadow-2xl hover:shadow-primary/60 transition-smooth hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Start Now
+              {isNavigating ? 'Cargando...' : 'Start Now'}
             </Button>
           </nav>
         </div>
@@ -101,11 +108,12 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   onClick={handleStartNow}
+                  disabled={isNavigating}
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-10 text-lg font-semibold shadow-2xl shadow-primary/60 group hover:shadow-[0_0_60px_rgba(255,107,53,0.8)] transition-smooth hover:scale-105"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-10 text-lg font-semibold shadow-2xl shadow-primary/60 group hover:shadow-[0_0_60px_rgba(255,107,53,0.8)] transition-smooth hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Tokenize Now
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  {isNavigating ? 'Cargando...' : 'Tokenize Now'}
+                  {!isNavigating && <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
                 </Button>
                 <Button
                   size="lg"
@@ -510,10 +518,11 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 onClick={handleStartNow}
+                disabled={isNavigating}
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-12 text-lg font-semibold shadow-[0_0_50px_rgba(255,107,53,0.7)] hover:shadow-[0_0_80px_rgba(255,107,53,0.9)] transition-smooth hover:scale-110 animate-glow"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-12 text-lg font-semibold shadow-[0_0_50px_rgba(255,107,53,0.7)] hover:shadow-[0_0_80px_rgba(255,107,53,0.9)] transition-smooth hover:scale-110 animate-glow disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Start Now
+                {isNavigating ? 'Cargando...' : 'Start Now'}
               </Button>
               <Button
                 size="lg"

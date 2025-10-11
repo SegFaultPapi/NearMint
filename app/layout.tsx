@@ -24,6 +24,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} antialiased`}>
       <ClerkProvider
+        signInUrl="/sign-in"
+        signUpUrl="/sign-up"
+        afterSignInUrl="/dashboard"
+        afterSignUpUrl="/dashboard"
         appearance={{
           variables: {
             colorPrimary: 'hsl(20, 100%, 63%)',
