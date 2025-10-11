@@ -4,44 +4,10 @@ import React, { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Wallet, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, Copy, ExternalLink, Shield, AlertCircle, RefreshCw } from "lucide-react"
+import { Wallet, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, Copy, ExternalLink, Shield, AlertCircle, RefreshCw, DollarSign } from "lucide-react"
 import { useWallet } from "@/contexts/wallet-context"
 import { useUser } from "@clerk/nextjs"
-
-const transactions = [
-  {
-    id: "1",
-    type: "deposit",
-    amount: 5000,
-    date: "2024-04-01",
-    status: "completed",
-    description: "Wallet deposit",
-  },
-  {
-    id: "2",
-    type: "loan",
-    amount: -2500,
-    date: "2024-03-28",
-    status: "completed",
-    description: "Loan disbursement - Charizard",
-  },
-  {
-    id: "3",
-    type: "repayment",
-    amount: 1750,
-    date: "2024-03-25",
-    status: "completed",
-    description: "Loan repayment",
-  },
-  {
-    id: "4",
-    type: "purchase",
-    amount: -4200,
-    date: "2024-03-20",
-    status: "completed",
-    description: "Marketplace purchase",
-  },
-]
+import { UsdcBalance } from "@/components/usdc-balance"
 
 export default function WalletPage() {
   const { address, isConnected, hasWallet, checkWalletStatus } = useWallet()
@@ -182,6 +148,22 @@ export default function WalletPage() {
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>
+              </div>
+
+              {/* Balance Total */}
+              <div className="mb-6 rounded-xl bg-gradient-to-br from-green-500/20 via-emerald-500/20 to-cyan-500/20 backdrop-blur-sm p-6 border border-green-500/30">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm text-gray-300 font-medium">Balance Total</p>
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
+                    <DollarSign className="h-3 w-3 text-green-400" />
+                    <span className="text-xs font-semibold text-green-400">USDC</span>
+                  </div>
+                </div>
+                <UsdcBalance 
+                  walletPublicKey={address} 
+                  className="text-5xl font-bold text-white"
+                />
+                <p className="text-xs text-gray-400 mt-2">Red: Starknet</p>
               </div>
 
               {/* Usuario Info */}
