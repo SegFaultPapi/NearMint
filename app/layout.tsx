@@ -27,7 +27,7 @@ export default function RootLayout({
         signInUrl="/sign-in"
         signUpUrl="/sign-up"
         afterSignInUrl="/dashboard"
-        afterSignUpUrl="/dashboard"
+        afterSignUpUrl="/onboarding/create-pin"
         appearance={{
           variables: {
             colorPrimary: 'hsl(20, 100%, 63%)',
