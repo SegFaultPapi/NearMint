@@ -1,4 +1,4 @@
 [sncast.nearmint]
-account = "nearmint_deployer"
+account = "my_wallet"
 network = "sepolia"
 

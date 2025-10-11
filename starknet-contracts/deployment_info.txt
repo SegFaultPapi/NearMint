@@ -1,0 +1,110 @@
+╔════════════════════════════════════════════════════════════════╗
+║          NEARMINT NFT - DEPLOYMENT INFO                        ║
+╚════════════════════════════════════════════════════════════════╝
+
+📅 Fecha: $(date)
+🌐 Red: Starknet Sepolia Testnet
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 INFORMACIÓN DEL CONTRATO:
+
+Contract Address: 
+  0x00fc9aa2aab8354f63307de8fee98038e181e0842016d6eefa26cee2f6b5fbe7
+
+Class Hash: 
+  0x02aec9decfecafada1147af1454a4b361e294d8f15ca03085dc222f110761bd5
+
+Transaction Hash (Deploy): 
+  0x05073f8ab3bce3880cd3c086adfc5bf03c35463367324429b78903f5c3e16c8b
+
+Transaction Hash (Declare): 
+  0x2e0917cc4f2b36bf0f711d5a0f448a69d90a41185825d61f9fe9cfea838b4b1
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 CONFIGURACIÓN:
+
+Owner Address: 
+  0x01d24d0dfcbc67a1dfd1ab0dd5c7a07133259789d8dc175bd674f56c77624a06
+
+NFT Name: NearMint NFT
+NFT Symbol: NMNFT
+Base URI: https://nearmint.io/metadata/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔗 ENLACES ÚTILES:
+
+Ver Contrato en Starkscan:
+  https://sepolia.starkscan.co/contract/0x00fc9aa2aab8354f63307de8fee98038e181e0842016d6eefa26cee2f6b5fbe7
+
+Ver Transacción de Deploy:
+  https://sepolia.starkscan.co/tx/0x05073f8ab3bce3880cd3c086adfc5bf03c35463367324429b78903f5c3e16c8b
+
+Ver Clase del Contrato:
+  https://sepolia.starkscan.co/class/0x02aec9decfecafada1147af1454a4b361e294d8f15ca03085dc222f110761bd5
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 FUNCIONES DISPONIBLES:
+
+🎨 MINTEO:
+  - mint(to, token_uri) → Mintear un NFT individual
+  - mint_batch(to, quantity) → Mintear múltiples NFTs
+
+📖 CONSULTAS:
+  - owner_of(token_id) → Obtener propietario de un token
+  - balance_of(address) → Obtener balance de NFTs
+  - get_next_token_id() → Próximo token ID disponible
+  - get_owner() → Propietario del contrato
+  - get_base_uri() → URI base configurada
+
+🔄 TRANSFERENCIAS:
+  - transfer_from(from, to, token_id) → Transferir NFT
+  - approve(to, token_id) → Aprobar operador
+  - set_approval_for_all(operator, approved) → Aprobar todos
+
+⚙️ GESTIÓN (solo owner):
+  - transfer_ownership(new_owner) → Transferir propiedad del contrato
+  - set_base_uri(new_base_uri) → Actualizar URI base
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 EJEMPLO DE USO CON SNCAST:
+
+# Mintear un NFT:
+sncast invoke \
+  --network sepolia \
+  --contract-address 0x00fc9aa2aab8354f63307de8fee98038e181e0842016d6eefa26cee2f6b5fbe7 \
+  --function mint \
+  --calldata <RECIPIENT_ADDRESS> 0 <TOKEN_URI_HEX> <URI_LENGTH>
+
+# Consultar balance:
+sncast call \
+  --network sepolia \
+  --contract-address 0x00fc9aa2aab8354f63307de8fee98038e181e0842016d6eefa26cee2f6b5fbe7 \
+  --function balance_of \
+  --calldata <ADDRESS>
+
+# Obtener owner de un token:
+sncast call \
+  --network sepolia \
+  --contract-address 0x00fc9aa2aab8354f63307de8fee98038e181e0842016d6eefa26cee2f6b5fbe7 \
+  --function owner_of \
+  --calldata <TOKEN_ID>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 PRÓXIMOS PASOS:
+
+1. ✅ Verifica el contrato en Starkscan
+2. ✅ Prueba mintear tu primer NFT
+3. ✅ Integra el contrato en tu frontend
+4. ✅ Configura metadata en IPFS
+5. ✅ Comparte tu colección NFT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ ¡Tu contrato NFT está listo para usar!
+
