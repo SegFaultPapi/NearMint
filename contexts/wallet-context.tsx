@@ -36,13 +36,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [isLoaded, user])
 
   const checkWalletStatus = async () => {
+    console.log('🔍 Verificando estado de wallet para usuario:', user?.id)
+    
     // Verificar si el localStorage pertenece al usuario actual
     const storedUserId = localStorage.getItem("chipi_wallet_user_id")
     const storedAddress = localStorage.getItem("chipi_wallet_address")
     const storedConnected = localStorage.getItem("chipi_wallet_connected")
     
+    console.log('📦 Datos en localStorage:', {
+      storedUserId,
+      storedAddress: storedAddress ? `${storedAddress.slice(0, 10)}...` : null,
+      storedConnected,
+      currentUserId: user?.id
+    })
+    
     // Si hay datos pero son de otro usuario, limpiarlos
     if (storedUserId && storedUserId !== user?.id) {
+      console.log('🧹 Limpiando datos de otro usuario')
       localStorage.removeItem("chipi_wallet_address")
       localStorage.removeItem("chipi_wallet_connected")
       localStorage.removeItem("chipi_wallet_user_id")
@@ -52,8 +62,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return
     }
     
-    // Si hay datos del usuario actual, cargarlos
-    if (storedAddress && storedConnected === "true" && storedUserId === user?.id) {
+    // Si hay dirección y está marcada como conectada
+    if (storedAddress && storedConnected === "true") {
+      // Si no hay userId guardado (usuarios antiguos), guardarlo ahora
+      if (!storedUserId && user?.id) {
+        console.log('💾 Actualizando localStorage con userId')
+        localStorage.setItem("chipi_wallet_user_id", user.id)
+      }
+      
+      console.log('✅ Cargando wallet guardada')
       setAddress(storedAddress)
       setIsConnected(true)
       setHasWallet(true)
@@ -61,6 +78,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
 
     // Si no hay datos, el usuario no tiene wallet
+    console.log('❌ No se encontró wallet')
+    setAddress(null)
+    setIsConnected(false)
     setHasWallet(false)
 
     // TODO: Aquí puedes hacer una llamada a tu API para verificar si el usuario tiene una wallet en ChipiSDK
@@ -70,6 +90,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     // if (hasWallet) {
     //   setAddress(address)
     //   setHasWallet(true)
+    //   setIsConnected(true)
     // }
   }
 
