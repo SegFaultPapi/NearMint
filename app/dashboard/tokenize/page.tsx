@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Upload, Scan, CheckCircle2, AlertCircle, Camera, FileText } from "lucide-react"
 import Image from "next/image"
+import { TokenizationComponent } from "@/components/tokenization-component"
 
 export default function TokenizePage() {
   const [step, setStep] = useState(1)
@@ -302,43 +303,9 @@ export default function TokenizePage() {
 
       {/* Step 4: Complete */}
       {step === 4 && (
-        <Card className="mx-auto max-w-3xl border-white/10 bg-black/40 p-8 backdrop-blur-xl">
-          <div className="text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/20">
-              <CheckCircle2 className="h-10 w-10 text-green-400" />
-            </div>
-            <h2 className="mb-4 text-3xl font-bold text-white">Tokenization Complete!</h2>
-            <p className="mb-8 text-gray-400">Your collectible has been successfully tokenized</p>
-
-            <div className="mb-8 rounded-xl border border-white/10 bg-gradient-to-br from-orange-500/10 to-cyan-500/10 p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-gray-400">Token ID</span>
-                <Badge className="bg-orange-500/20 text-orange-400">NFT-2024-001</Badge>
-              </div>
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-gray-400">Blockchain</span>
-                <span className="text-white">NEAR Protocol</span>
-              </div>
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-gray-400">Estimated Value</span>
-                <span className="text-2xl font-bold text-white">$5,200</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Available Credit</span>
-                <span className="text-xl font-bold text-cyan-400">$3,900</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1 border-white/10 bg-white/5 text-white hover:bg-white/10">
-                View in Collection
-              </Button>
-              <Button className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50">
-                Get Loan Now
-              </Button>
-            </div>
-          </div>
-        </Card>
+        <div className="mx-auto max-w-4xl">
+          <TokenizationComponent />
+        </div>
       )}
     </div>
   )
