@@ -143,70 +143,70 @@ export default function Home() {
 
             <div className="relative h-[500px]">
               {/* Top left card */}
-              <div className="absolute top-0 left-0 w-48 h-64 group cursor-pointer">
+              <div className="absolute -top-4 -left-4 w-64 h-80 group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl group-hover:blur-lg transition-smooth" />
                 <div className="relative glass-effect rounded-2xl p-2 shadow-xl border border-border/50 hover:border-primary/50 transition-smooth hover:scale-105 hover:-rotate-3 h-full">
                   <Image
-                    src="/placeholder.svg?height=240&width=180"
+                    src="/images/card-1.png"
                     alt="Baseball card"
-                    width={180}
-                    height={240}
+                    width={234}
+                    height={312}
                     className="rounded-xl w-full h-full object-cover"
                   />
                 </div>
               </div>
 
               {/* Top right card */}
-              <div className="absolute top-8 right-0 w-44 h-60 group cursor-pointer">
+              <div className="absolute top-0 -right-4 w-56 h-80 group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-success/20 rounded-2xl blur-xl group-hover:blur-lg transition-smooth" />
                 <div className="relative glass-effect rounded-2xl p-2 shadow-xl border border-border/50 hover:border-accent/50 transition-smooth hover:scale-105 hover:rotate-3 h-full">
                   <Image
-                    src="/placeholder.svg?height=224&width=164"
+                    src="/images/card-2.png"
                     alt="Pokemon card"
-                    width={164}
-                    height={224}
+                    width={213}
+                    height={291}
                     className="rounded-xl w-full h-full object-cover"
                   />
                 </div>
               </div>
 
               {/* Center card - larger */}
-              <div className="absolute top-32 left-1/2 -translate-x-1/2 w-52 h-72 group cursor-pointer z-10">
+              <div className="absolute top-24 left-1/2 -translate-x-1/2 w-72 h-72 group cursor-pointer z-10">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30 rounded-2xl blur-2xl group-hover:blur-xl transition-smooth" />
                 <div className="relative glass-effect rounded-2xl p-2 shadow-2xl border border-border/50 hover:border-primary/50 transition-smooth hover:scale-110 h-full">
                   <Image
-                    src="/placeholder.svg?height=272&width=196"
+                    src="/images/card-3.jpg"
                     alt="Sports card"
-                    width={196}
-                    height={272}
+                    width={288}
+                    height={288}
                     className="rounded-xl w-full h-full object-cover"
                   />
                 </div>
               </div>
 
               {/* Bottom left card */}
-              <div className="absolute bottom-0 left-12 w-40 h-56 group cursor-pointer">
+              <div className="absolute bottom-4 left-16 w-52 h-72 group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-success/20 to-primary/20 rounded-2xl blur-xl group-hover:blur-lg transition-smooth" />
                 <div className="relative glass-effect rounded-2xl p-2 shadow-xl border border-border/50 hover:border-success/50 transition-smooth hover:scale-105 hover:rotate-6 h-full">
                   <Image
-                    src="/placeholder.svg?height=208&width=148"
+                    src="/images/card-4.png"
                     alt="Trading card"
-                    width={148}
-                    height={208}
+                    width={192}
+                    height={270}
                     className="rounded-xl w-full h-full object-cover"
                   />
                 </div>
               </div>
 
               {/* Bottom right card */}
-              <div className="absolute bottom-8 right-8 w-44 h-60 group cursor-pointer">
+              <div className="absolute bottom-4 right-12 w-56 h-80 group cursor-pointer">
                 <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-primary/20 rounded-2xl blur-xl group-hover:blur-lg transition-smooth" />
                 <div className="relative glass-effect rounded-2xl p-2 shadow-xl border border-border/50 hover:border-accent/50 transition-smooth hover:scale-105 hover:-rotate-6 h-full">
                   <Image
-                    src="/placeholder.svg?height=224&width=164"
+                    src="/images/card-5.png"
                     alt="Collectible card"
-                    width={164}
-                    height={224}
+                    width={213}
+                    height={291}
                     className="rounded-xl w-full h-full object-cover"
                   />
                 </div>
@@ -356,7 +356,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl blur-2xl group-hover:blur-xl transition-smooth" />
               <div className="relative glass-effect rounded-3xl p-2 shadow-2xl hover:shadow-primary/20 transition-smooth">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/images/card-1.png"
                   alt="Collectibles"
                   width={600}
                   height={400}
@@ -372,7 +372,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-success/10 rounded-3xl blur-2xl group-hover:blur-xl transition-smooth" />
               <div className="relative glass-effect rounded-3xl p-2 shadow-2xl hover:shadow-accent/20 transition-smooth">
                 <Image
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/images/card-2.png"
                   alt="Digital tokenization"
                   width={600}
                   height={400}
