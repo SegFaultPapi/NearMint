@@ -10,17 +10,7 @@ openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", ta
 [[target.starknet-contract]]
 sierra = true
 casm = true
-# Optimizaciones para compilación más rápida
-sierra-replace-ids = true
-allowed-libfuncs-list = { name = "experimental" }
 
 [lib]
 
 [tool.snforge]
-# Configuración para tests más rápidos
-exit_first = true
-
-[tool.scarb]
-# Configuración de compilación optimizada
-[tool.scarb.build]
-parallel = true

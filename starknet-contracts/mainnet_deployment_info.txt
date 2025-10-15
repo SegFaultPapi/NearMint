@@ -1,0 +1,89 @@
+╔════════════════════════════════════════════════════════════════╗
+║          NEARMINT NFT - MAINNET DEPLOYMENT INFO                ║
+╚════════════════════════════════════════════════════════════════╝
+
+📅 Fecha: $(date)
+🌐 Red: Starknet Mainnet
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 INFORMACIÓN DEL CONTRATO:
+
+Contract Address: 
+  0x06ffa01681125163ebdaae8c8ca2f49f42cccda6472f81e71cf31a56eb690701
+
+Class Hash: 
+  0x1408985608c02e7e2b14ce3805eaf071baf3c028da15d238c4ce7d5afa76be5
+
+Transaction Hash (Deploy): 
+  0x07c1b7e48632458d56c2f1b796449cb092e3d8b5dd70c01d32d8128dfb778a5b
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👤 CONFIGURACIÓN:
+
+Owner Address: 
+  0x2c611a3ce30a9bd8eadff745bbed39ad01a8434cfa30cf4c27a5a07c29b5bfb
+
+NFT Name: NearMint
+NFT Symbol: NMNFT
+Base URI: https://nearmint.io
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔗 ENLACES ÚTILES:
+
+Ver Contrato en Starkscan:
+  https://starkscan.co/contract/0x06ffa01681125163ebdaae8c8ca2f49f42cccda6472f81e71cf31a56eb690701
+
+Ver Transacción de Deploy:
+  https://starkscan.co/tx/0x07c1b7e48632458d56c2f1b796449cb092e3d8b5dd70c01d32d8128dfb778a5b
+
+Ver Clase del Contrato:
+  https://starkscan.co/class/0x1408985608c02e7e2b14ce3805eaf071baf3c028da15d238c4ce7d5afa76be5
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 FUNCIONES DISPONIBLES:
+
+🎨 MINTEO:
+  - mint() → Mintear un NFT (cualquier usuario puede mintear)
+
+📖 CONSULTAS:
+  - get_next_token_id() → Próximo token ID disponible
+  - get_name() → Nombre del NFT
+  - get_symbol() → Símbolo del NFT
+  - get_base_uri() → URI base configurada
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 EJEMPLO DE USO CON SNCAST:
+
+# Mintear un NFT:
+sncast invoke \
+  --network mainnet \
+  --contract-address 0x06ffa01681125163ebdaae8c8ca2f49f42cccda6472f81e71cf31a56eb690701 \
+  --function mint
+
+# Consultar próximo token ID:
+sncast call \
+  --network mainnet \
+  --contract-address 0x06ffa01681125163ebdaae8c8ca2f49f42cccda6472f81e71cf31a56eb690701 \
+  --function get_next_token_id
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 PRÓXIMOS PASOS:
+
+1. ✅ Verifica el contrato en Starkscan
+2. ✅ Prueba mintear tu primer NFT
+3. ✅ Integra el contrato en tu frontend
+4. ✅ Configura metadata en IPFS
+5. ✅ Comparte tu colección NFT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ ¡Tu contrato NFT está desplegado en MAINNET y listo para usar!
+
+🎉 DEPLOYMENT EXITOSO 🎉
+
