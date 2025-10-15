@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useCallAnyContract } from "@chipi-stack/nextjs"
+import { useCallAnyContract, useGetWallet } from "@chipi-stack/nextjs"
 import { useAuth } from "@clerk/nextjs"
 import { useWallet } from "@/contexts/wallet-context"
 
 // Dirección del contrato NearMint NFT desplegado en mainnet
-const NEARMINT_NFT_CONTRACT = "0x04b820da27ba5d3746c42b3a2b5d30aac509e2c683c4c27b175ca61df97ac98d"
+const NEARMINT_NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT_ADDRESS || "0x06ffa01681125163ebdaae8c8ca2f49f42cccda6472f81e71cf31a56eb690701"
 
 interface MintResult {
   tokenId?: string
@@ -24,16 +24,19 @@ export function useNearMintNFT() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { callAnyContractAsync } = useCallAnyContract()
+  const { fetchWallet } = useGetWallet()
   const { address, isConnected } = useWallet()
-  const { getToken } = useAuth()
+  const { getToken, userId } = useAuth()
 
   // Mint un NFT individual
-  const mintNFT = useCallback(async (to: string, metadata?: any): Promise<MintResult> => {
+  // NOTA: El contrato mint() automáticamente mintea al caller (la wallet conectada)
+  // No se necesita especificar destinatario
+  const mintNFT = useCallback(async (metadata?: any, pin?: string): Promise<MintResult> => {
     setIsLoading(true)
     setError(null)
 
     try {
-      console.log('🎨 Minting NFT to:', to)
+      console.log('🎨 Minting NFT to: caller (wallet conectada)')
       console.log('📋 Contract Address:', NEARMINT_NFT_CONTRACT)
       console.log('📝 Metadata:', metadata)
       
@@ -46,18 +49,68 @@ export function useNearMintNFT() {
         throw new Error("No se pudo obtener el token de autenticación")
       }
       
-      // Por ahora, simular la llamada al contrato hasta que tengamos la configuración correcta
-      console.log('⚠️ Simulando llamada al contrato - configuración pendiente')
+      if (!userId) {
+        throw new Error("No se pudo obtener el ID del usuario")
+      }
       
-      // Simular delay para mostrar el proceso
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      if (!pin) {
+        throw new Error("PIN requerido para la transacción")
+      }
       
-      // Generar un tokenId simulado
-      const tokenId = Math.floor(Math.random() * 10000).toString()
-      const transactionHash = `0x${Math.random().toString(16).substr(2, 40)}`
+      console.log('🔍 Obteniendo wallet data...')
+      
+      // Obtener la información completa de la wallet usando fetchWallet
+      const walletData = await fetchWallet({
+        params: {
+          externalUserId: userId,
+        },
+        getBearerToken: async () => bearerToken,
+      })
+      
+      console.log('🔍 walletData obtenida:', walletData)
+      console.log('🔍 walletData keys:', Object.keys(walletData || {}))
+      
+      if (!walletData) {
+        throw new Error("No se pudo obtener la información de la wallet")
+      }
+      
+      console.log('🚀 Llamando función mint() del contrato...')
+      console.log('🔍 El contrato mint() no recibe parámetros - mintea automáticamente al caller')
+      
+      // Llamada real al contrato usando callAnyContractAsync
+      // NOTA: La función mint() del contrato NO recibe parámetros
+      // Automáticamente mintea al caller (la wallet que ejecuta la transacción)
+      const result = await callAnyContractAsync({
+        params: {
+          encryptKey: pin,
+          wallet: walletData as any, // Usar walletData completo
+          contractAddress: NEARMINT_NFT_CONTRACT,
+          calls: [
+            {
+              contractAddress: NEARMINT_NFT_CONTRACT,
+              entrypoint: 'mint',
+              calldata: [], // ✅ Sin parámetros - el contrato mintea al caller
+            }
+          ],
+        },
+        bearerToken,
+      })
+      
+      console.log('✅ Resultado de la transacción:', result)
+      console.log('✅ Tipo de result:', typeof result)
+      
+      const resultData = result as any
+      
+      if (resultData.error) {
+        throw new Error(resultData.error)
+      }
+      
+      // Obtener el token ID del resultado
+      const tokenId = resultData.data?.[0] || '1'
+      const transactionHash = resultData.transactionHash
       
       return {
-        tokenId,
+        tokenId: tokenId.toString(),
         transactionHash,
       }
       
@@ -72,72 +125,75 @@ export function useNearMintNFT() {
     } finally {
       setIsLoading(false)
     }
-  }, [callAnyContractAsync, address, isConnected, getToken])
+  }, [callAnyContractAsync, fetchWallet, address, isConnected, getToken, userId])
 
-  // Mint múltiples NFTs (batch)
-  const mintBatchNFTs = useCallback(async (to: string, quantity: number): Promise<MintBatchResult> => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      console.log(`🎨 Minting ${quantity} NFTs to:`, to)
-      console.log('📋 Contract Address:', NEARMINT_NFT_CONTRACT)
-      
-      if (!isConnected || !address) {
-        throw new Error("Wallet no conectada")
-      }
-      
-      // Por ahora, simular la llamada al contrato
-      console.log('⚠️ Simulando llamada batch al contrato - configuración pendiente')
-      
-      // Simular delay para mostrar el proceso
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
-      // Generar tokenIds simulados
-      const tokenIds = Array.from({ length: quantity }, (_, i) => 
-        (Math.floor(Math.random() * 10000) + i).toString()
-      )
-      const transactionHash = `0x${Math.random().toString(16).substr(2, 40)}`
-      
-      return {
-        tokenIds,
-        transactionHash,
-      }
-      
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al crear NFTs en lote"
-      console.error('❌ Error minting batch NFTs:', err)
-      setError(errorMessage)
-      
-      return {
-        error: errorMessage,
-      }
-    } finally {
-      setIsLoading(false)
+  // NOTA: El contrato desplegado NO tiene función mint_batch
+  // Esta función retorna error directamente
+  const mintBatchNFTs = useCallback(async (quantity: number, pin?: string): Promise<MintBatchResult> => {
+    return {
+      error: "La función mint_batch no está disponible en el contrato actual. Usa mint() individual."
     }
-  }, [address, isConnected])
+  }, [])
 
   // Obtener el siguiente token ID disponible
   const getNextTokenId = useCallback(async (): Promise<string | null> => {
     try {
-      // Por ahora retornar un ID simulado
-      return Math.floor(Math.random() * 10000).toString()
+      const bearerToken = await getToken()
+      if (!bearerToken) {
+        throw new Error("No se pudo obtener el token de autenticación")
+      }
+      
+      const result = await callAnyContractAsync({
+        params: {
+          contractAddress: NEARMINT_NFT_CONTRACT,
+          entrypoint: 'get_next_token_id',
+          calldata: [],
+        } as any,
+        bearerToken,
+      } as any)
+      
+      const resultData = result as any
+      
+      if (resultData.error) {
+        throw new Error(resultData.error)
+      }
+      
+      return resultData.data?.[0]?.toString() || null
     } catch (err) {
       console.error('❌ Error getting next token ID:', err)
       return null
     }
-  }, [])
+  }, [callAnyContractAsync, getToken])
 
   // Obtener el owner del contrato
   const getOwner = useCallback(async (): Promise<string | null> => {
     try {
-      // Por ahora retornar la dirección del contrato como owner
-      return NEARMINT_NFT_CONTRACT
+      const bearerToken = await getToken()
+      if (!bearerToken) {
+        throw new Error("No se pudo obtener el token de autenticación")
+      }
+      
+      const result = await callAnyContractAsync({
+        params: {
+          contractAddress: NEARMINT_NFT_CONTRACT,
+          entrypoint: 'get_owner',
+          calldata: [],
+        } as any,
+        bearerToken,
+      } as any)
+      
+      const resultData = result as any
+      
+      if (resultData.error) {
+        throw new Error(resultData.error)
+      }
+      
+      return resultData.data?.[0] || null
     } catch (err) {
       console.error('❌ Error getting owner:', err)
       return null
     }
-  }, [])
+  }, [callAnyContractAsync, getToken])
 
   return {
     // Funciones

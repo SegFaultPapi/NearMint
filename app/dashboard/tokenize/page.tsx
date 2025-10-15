@@ -12,6 +12,8 @@ import { Upload, Scan, CheckCircle2, AlertCircle, Camera, FileText } from "lucid
 import Image from "next/image"
 import { useNearMintNFT } from "@/hooks/use-nearmint-nft"
 import { useWallet } from "@/contexts/wallet-context"
+import { PinDialog } from "@/components/pin-dialog"
+import { toast } from "sonner"
 
 export default function TokenizePage() {
   const [step, setStep] = useState(1)
@@ -27,10 +29,48 @@ export default function TokenizePage() {
   })
   const [isTokenizing, setIsTokenizing] = useState(false)
   const [tokenizationResult, setTokenizationResult] = useState<any>(null)
+  const [showPinDialog, setShowPinDialog] = useState(false)
+  const [pendingTokenization, setPendingTokenization] = useState<{
+    metadata: any
+  } | null>(null)
   
   // Hooks para tokenización real
   const { address, isConnected } = useWallet()
   const { mintNFT, isLoading: mintLoading, error: mintError } = useNearMintNFT()
+
+  // Función para manejar la tokenización con PIN
+  const handlePinSubmit = async (pin: string) => {
+    if (!pendingTokenization) return
+
+    setIsTokenizing(true)
+    setShowPinDialog(false)
+
+    try {
+      // Llamar al contrato real con PIN
+      // NOTA: mint() automáticamente mintea al caller (la wallet conectada)
+      const result = await mintNFT(pendingTokenization.metadata, pin)
+      
+      if (result.error) {
+        throw new Error(result.error)
+      }
+      
+      setTokenizationResult({
+        tokenId: result.tokenId,
+        transactionHash: result.transactionHash,
+        metadata: pendingTokenization.metadata
+      })
+      
+      toast.success(`NFT creado exitosamente! Token ID: ${result.tokenId}`)
+      setPendingTokenization(null)
+      
+    } catch (error) {
+      console.error('Error tokenizing:', error)
+      toast.error(`Error al tokenizar: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      setPendingTokenization(null)
+    } finally {
+      setIsTokenizing(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0a0a0a] to-cyan-950/20 p-8">
@@ -389,45 +429,28 @@ export default function TokenizePage() {
                 Back to Details
               </Button>
               <Button
-                onClick={async () => {
+                onClick={() => {
                   if (!isConnected || !address) {
-                    alert("Conecta tu wallet primero")
+                    toast.error("Conecta tu wallet primero")
                     return
                   }
-                  
-                  setIsTokenizing(true)
-                  
-                  try {
-                    // Generar metadata del NFT
-                    const nftMetadata = {
-                      name: itemDetails.name,
-                      description: itemDetails.description,
-                      category: itemDetails.category,
-                      condition: itemDetails.condition,
-                      estimatedValue: itemDetails.estimatedValue,
-                      year: itemDetails.year,
-                      tokenizedDate: new Date().toISOString().split('T')[0]
-                    }
-                    
-                    // Llamar al contrato real
-                    const result = await mintNFT(address, nftMetadata)
-                    
-                    if (result.error) {
-                      throw new Error(result.error)
-                    }
-                    
-                    setTokenizationResult({
-                      tokenId: result.tokenId,
-                      transactionHash: result.transactionHash,
-                      metadata: nftMetadata
-                    })
-                    
-                  } catch (error) {
-                    console.error('Error tokenizing:', error)
-                    alert(`Error al tokenizar: ${error instanceof Error ? error.message : 'Error desconocido'}`)
-                  } finally {
-                    setIsTokenizing(false)
+
+                  // Generar metadata del NFT
+                  const nftMetadata = {
+                    name: itemDetails.name,
+                    description: itemDetails.description,
+                    category: itemDetails.category,
+                    condition: itemDetails.condition,
+                    estimatedValue: itemDetails.estimatedValue,
+                    year: itemDetails.year,
+                    tokenizedDate: new Date().toISOString().split('T')[0]
                   }
+                  
+                  // Guardar datos pendientes y mostrar diálogo de PIN
+                  setPendingTokenization({
+                    metadata: nftMetadata
+                  })
+                  setShowPinDialog(true)
                 }}
                 disabled={isTokenizing || mintLoading || !isConnected}
                 className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50"
@@ -533,6 +556,15 @@ export default function TokenizePage() {
           </Card>
         </div>
       )}
+
+      {/* Diálogo de PIN */}
+      <PinDialog
+        open={showPinDialog}
+        onOpenChange={setShowPinDialog}
+        onSubmit={handlePinSubmit}
+        title="Confirmar Tokenización"
+        description="Ingresa tu PIN de 4 dígitos para autorizar la creación del NFT"
+      />
     </div>
   )
 }

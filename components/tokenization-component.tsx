@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useWallet } from "@/contexts/wallet-context"
 import { useNearMintNFT } from "@/hooks/use-nearmint-nft"
+import { PinDialog } from "@/components/pin-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -53,6 +54,12 @@ export function TokenizationComponent() {
   } | null>(null)
 
   const [step, setStep] = useState<'form' | 'minting' | 'success'>('form')
+  const [showPinDialog, setShowPinDialog] = useState(false)
+  const [pendingMintData, setPendingMintData] = useState<{
+    address: string
+    metadata: NFTMetadata
+    quantity: number
+  } | null>(null)
 
   // Generar metadata del NFT basado en los datos del formulario
   const generateNFTMetadata = (formData: TokenizationFormData): NFTMetadata => {
@@ -110,19 +117,33 @@ export function TokenizationComponent() {
       return
     }
 
+    // Generar metadata del NFT
+    const nftMetadata = generateNFTMetadata(formData)
+    
+    // Guardar datos pendientes y mostrar diálogo de PIN
+    setPendingMintData({
+      address,
+      metadata: nftMetadata,
+      quantity: formData.quantity,
+    })
+    setShowPinDialog(true)
+  }
+
+  const handlePinSubmit = async (pin: string) => {
+    if (!pendingMintData) return
+
     setStep('minting')
+    setShowPinDialog(false)
 
     try {
-      // Generar metadata del NFT
-      const nftMetadata = generateNFTMetadata(formData)
-      console.log('📝 Generated NFT metadata:', nftMetadata)
+      console.log('📝 Generated NFT metadata:', pendingMintData.metadata)
       
       let result
       
-      if (formData.quantity === 1) {
+      if (pendingMintData.quantity === 1) {
         // Mint individual
         console.log('🚀 Starting individual mint...')
-        result = await mintNFT(address, nftMetadata)
+        result = await mintNFT(pendingMintData.address, pendingMintData.metadata, pin)
         
         if (result.error) {
           throw new Error(result.error)
@@ -131,7 +152,7 @@ export function TokenizationComponent() {
         setMintResult({
           tokenId: result.tokenId,
           transactionHash: result.transactionHash,
-          metadata: nftMetadata,
+          metadata: pendingMintData.metadata,
           type: 'single',
         })
         
@@ -139,7 +160,7 @@ export function TokenizationComponent() {
       } else {
         // Mint batch
         console.log('🚀 Starting batch mint...')
-        result = await mintBatchNFTs(address, formData.quantity)
+        result = await mintBatchNFTs(pendingMintData.address, pendingMintData.quantity, pin)
         
         if (result.error) {
           throw new Error(result.error)
@@ -148,20 +169,22 @@ export function TokenizationComponent() {
         setMintResult({
           tokenIds: result.tokenIds,
           transactionHash: result.transactionHash,
-          metadata: nftMetadata,
+          metadata: pendingMintData.metadata,
           type: 'batch',
         })
         
-        toast.success(`${formData.quantity} NFTs creados exitosamente!`)
+        toast.success(`${pendingMintData.quantity} NFTs creados exitosamente!`)
       }
 
       setStep('success')
+      setPendingMintData(null)
       
     } catch (err) {
       console.error('Error en tokenización:', err)
       const errorMessage = err instanceof Error ? err.message : "Error al crear el NFT. Intenta nuevamente."
       toast.error(errorMessage)
       setStep('form')
+      setPendingMintData(null)
     }
   }
 
@@ -375,6 +398,7 @@ export function TokenizationComponent() {
   }
 
   return (
+    <>
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -529,5 +553,15 @@ export function TokenizationComponent() {
         </form>
       </CardContent>
     </Card>
+
+    {/* Diálogo de PIN */}
+    <PinDialog
+      open={showPinDialog}
+      onOpenChange={setShowPinDialog}
+      onSubmit={handlePinSubmit}
+      title="Confirmar Tokenización"
+      description="Ingresa tu PIN de 4 dígitos para autorizar la creación del NFT"
+    />
+  </>
   )
 }
