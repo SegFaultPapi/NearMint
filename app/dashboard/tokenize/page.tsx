@@ -47,12 +47,12 @@ export default function TokenizePage() {
   // Función para pagar con wallet conectada
   const handlePayWithWallet = async () => {
     if (!isConnected || !address) {
-      toast.error("Wallet no conectada. Conecta tu wallet primero.")
+      toast.error("Wallet not connected. Connect your wallet first.")
       return
     }
 
     if (!chipiWallet) {
-      toast.error("Wallet de Chipi no disponible. Intenta recargar la página.")
+      toast.error("Chipi wallet not available. Try reloading the page.")
       return
     }
 
@@ -62,18 +62,18 @@ export default function TokenizePage() {
       // Obtener token de autenticación
       const bearerToken = await getToken()
       if (!bearerToken) {
-        throw new Error("No se pudo obtener el token de autenticación")
+        throw new Error("Could not get authentication token")
       }
 
       // Solicitar PIN de la wallet
-      const encryptKey = prompt("Ingresa tu PIN de wallet para autorizar el pago:") || ""
+      const encryptKey = prompt("Enter your wallet PIN to authorize payment:") || ""
       if (!encryptKey) {
         throw new Error("PIN requerido para autorizar el pago")
       }
 
       const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || "0x4bcc79ce30cc5185b854e6d49f1629c632ec030a3ee41613ce4c464cb8d8d2f"
       
-      console.log('💳 Iniciando pago con wallet:', {
+      console.log('💳 Starting payment with wallet:', {
         userWallet: address,
         merchantWallet,
         amount: 0.01,
@@ -82,23 +82,23 @@ export default function TokenizePage() {
       })
 
       // Mostrar mensaje de verificación de balance
-      toast.info("Verificando balance de USDC...", { position: "bottom-center" })
+      toast.info("Verifying USDC balance...", { position: "bottom-center" })
 
-      // Realizar transferencia usando ChipiPay SDK con la wallet correctamente estructurada
+      // Perform transfer using ChipiPay SDK with properly structured wallet
       const txHash = await transferAsync({
         params: {
           amount: "0.01",
           encryptKey,
-          wallet: chipiWallet, // Usar la wallet de Chipi correctamente estructurada
+          wallet: chipiWallet, // Use Chipi wallet properly structured
           token: "USDC" as any,
           recipient: merchantWallet,
         },
         bearerToken: bearerToken,
       })
 
-      console.log('✅ Pago exitoso:', txHash)
+      console.log('✅ Payment successful:', txHash)
       
-      toast.success("¡Pago exitoso! ✨", { 
+      toast.success("Payment successful! ✨", { 
         position: "bottom-center",
         description: `Transacción: ${txHash.slice(0, 10)}...`
       })
@@ -108,21 +108,21 @@ export default function TokenizePage() {
     } catch (error: any) {
       console.error('❌ Error en pago:', error)
       
-      let errorMessage = "Error desconocido en el pago"
+      let errorMessage = "Unknown payment error"
       
       // Manejar errores específicos de Starknet/Chipi
       if (error.message?.includes("u256_sub Overflow") || error.message?.includes("Overflow")) {
-        errorMessage = "Fondos insuficientes en tu wallet USDC"
+        errorMessage = "Insufficient USDC funds in your wallet"
       } else if (error.message?.includes("multicall-failed")) {
-        errorMessage = "Error en la transacción multicall. Verifica tu balance de USDC"
+        errorMessage = "Multicall transaction error. Check your USDC balance"
       } else if (error.message?.includes("ENTRYPOINT_FAILED")) {
-        errorMessage = "Error en el punto de entrada de la transacción"
+        errorMessage = "Transaction entry point error"
       } else if (error.message?.includes("insufficient")) {
-        errorMessage = "Fondos insuficientes en tu wallet"
+        errorMessage = "Insufficient funds in your wallet"
       } else if (error.message?.includes("rejected")) {
-        errorMessage = "Transacción rechazada por el usuario"
+        errorMessage = "Transaction rejected by user"
       } else if (error.message?.includes("network")) {
-        errorMessage = "Error de red. Intenta nuevamente"
+        errorMessage = "Network error. Try again"
       } else if (error.message) {
         errorMessage = error.message
       }
@@ -130,7 +130,7 @@ export default function TokenizePage() {
       toast.error(`Error en el pago: ${errorMessage}`, { position: "bottom-center" })
       
       // Mostrar información adicional para debugging
-      console.log('🔍 Detalles del error:', {
+      console.log('🔍 Error details:', {
         errorType: error.type,
         contractAddress: error.contractAddress,
         revertError: error.revertError
@@ -141,7 +141,7 @@ export default function TokenizePage() {
     }
   }
   
-  // Hooks para tokenización real
+  // Hooks for real tokenization
   const { address, isConnected } = useWallet()
   const { mintNFT, isLoading: mintLoading, error: mintError } = useNearMintNFT()
   const { addNFT } = useUserNFTs()
@@ -149,21 +149,21 @@ export default function TokenizePage() {
   const { transferAsync } = useTransfer()
   const { wallet: chipiWallet, isLoading: walletLoading, isError, error, refetch } = useWalletWithAuth()
 
-  // Manejar subida de imágenes a IPFS
+  // Handle IPFS image upload
   const handleIPFSUploadComplete = (results: UploadResult[]) => {
     setIpfsImages(results)
     
-    // Actualizar también las URLs locales para preview
+    // Also update local URLs for preview
     const localUrls = results
       .filter(result => result.success && result.ipfsUrl)
       .map(result => result.ipfsUrl!)
     
     setUploadedImages(localUrls)
     
-    toast.success(`${results.filter(r => r.success).length} imágenes subidas a IPFS exitosamente`)
+    toast.success(`${results.filter(r => r.success).length} images uploaded to IPFS successfully`)
   }
 
-  // Función para manejar la tokenización con PIN
+  // Function to handle tokenization with PIN
   const handlePinSubmit = async (pin: string) => {
     if (!pendingTokenization) return
 
@@ -171,8 +171,8 @@ export default function TokenizePage() {
     setShowPinDialog(false)
 
     try {
-      // Llamar al contrato real con PIN
-      // NOTA: mint() automáticamente mintea al caller (la wallet conectada)
+      // Call real contract with PIN
+      // NOTE: mint() automatically mints to caller (connected wallet)
       const result = await mintNFT(pendingTokenization.metadata, pin)
       
       if (result.error) {
@@ -185,9 +185,9 @@ export default function TokenizePage() {
         metadata: pendingTokenization.metadata
       })
       
-      // Guardar NFT en Clerk metadata
+      // Save NFT in Clerk metadata
       try {
-        // Usar imagen de IPFS si está disponible, sino usar placeholder
+        // Use IPFS image if available, otherwise use placeholder
         const imageUrl = ipfsImages.length > 0 && ipfsImages[0].success 
           ? ipfsImages[0].ipfsUrl!
           : uploadedImages[0] || "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800"
@@ -207,18 +207,18 @@ export default function TokenizePage() {
           description: itemDetails.description,
           condition: itemDetails.condition,
         })
-        console.log('✅ NFT guardado en Clerk metadata')
+        console.log('✅ NFT saved in Clerk metadata')
       } catch (metadataError) {
-        console.error('❌ Error guardando en Clerk metadata:', metadataError)
-        // No fallar el mint si falla guardar metadata
+        console.error('❌ Error saving in Clerk metadata:', metadataError)
+        // Don't fail mint if saving metadata fails
       }
       
-      toast.success(`NFT creado exitosamente! Token ID: ${result.tokenId}`)
+      toast.success(`NFT created successfully! Token ID: ${result.tokenId}`)
       setPendingTokenization(null)
       
     } catch (error) {
       console.error('Error tokenizing:', error)
-      toast.error(`Error al tokenizar: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      toast.error(`Error tokenizing: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setPendingTokenization(null)
     } finally {
       setIsTokenizing(false)
@@ -273,10 +273,10 @@ export default function TokenizePage() {
       {step === 1 && (
         <div className="grid gap-6 lg:grid-cols-2">
           <Card className="border-white/10 bg-black/40 p-8 backdrop-blur-xl">
-            <h2 className="mb-6 text-2xl font-bold text-white">Subir Imágenes a IPFS</h2>
+            <h2 className="mb-6 text-2xl font-bold text-white">Upload Images</h2>
             <p className="mb-6 text-gray-400">
-              Las imágenes se almacenan de forma descentralizada en IPFS para garantizar 
-              la permanencia y accesibilidad de tu NFT.
+              Images are stored in a decentralized way to ensure 
+              permanence and accessibility of your NFT.
             </p>
             
             <IPFSUploader 
@@ -289,7 +289,7 @@ export default function TokenizePage() {
             {/* Preview Grid */}
             {(uploadedImages.length > 0 || reverseImage) && (
               <div className="mt-6">
-                <h3 className="mb-4 text-lg font-semibold text-white">Vista Previa</h3>
+                <h3 className="mb-4 text-lg font-semibold text-white">Preview</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {uploadedImages.length > 0 && (
                     <div className="relative aspect-square overflow-hidden rounded-lg">
@@ -498,81 +498,29 @@ export default function TokenizePage() {
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-500/20">
               <CreditCard className="h-10 w-10 text-blue-400" />
             </div>
-            <h2 className="mb-4 text-3xl font-bold text-white">Custodia Segura & Pago</h2>
+            <h2 className="mb-4 text-3xl font-bold text-white">Secure Custody & Payment</h2>
             <p className="text-gray-400">
-              Envía tu coleccionable a nuestras vaults seguras y paga la membresía de custodia
+              Send your collectible to our secure vaults and pay the custody membership
             </p>
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2">
-            {/* Left Column - Custody Information */}
+            {/* Left Column - Payment */}
             <div className="space-y-6">
               <Card className="border-white/10 bg-white/5 p-6">
-                <h3 className="mb-4 text-xl font-semibold text-white">📦 Envío a Vault Segura</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
-                      <span className="text-sm font-bold text-green-400">1</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white">Empaque Seguro</h4>
-                      <p className="text-sm text-gray-400">Envuelve tu coleccionable en materiales protectores</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
-                      <span className="text-sm font-bold text-green-400">2</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white">Envío Certificado</h4>
-                      <p className="text-sm text-gray-400">Usa servicio de envío con seguro y tracking</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
-                      <span className="text-sm font-bold text-green-400">3</span>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white">Almacenamiento Seguro</h4>
-                      <p className="text-sm text-gray-400">Guardado en vault climatizada y asegurada</p>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="border-white/10 bg-white/5 p-6">
-                <h3 className="mb-4 text-xl font-semibold text-white">🏛️ Dirección de Envío</h3>
-                <div className="space-y-2 text-sm">
-                  <p className="text-white font-medium">NearMint Vault Services</p>
-                  <p className="text-gray-400">123 Blockchain Street</p>
-                  <p className="text-gray-400">Crypto City, CC 12345</p>
-                  <p className="text-gray-400">United States</p>
-                  <div className="mt-3 rounded-lg bg-blue-500/10 p-3">
-                    <p className="text-xs text-blue-400 font-medium">📋 Referencia de envío:</p>
-                    <p className="text-xs text-blue-300 font-mono">NM-{itemDetails.name.slice(0, 8).toUpperCase()}-{Date.now().toString().slice(-6)}</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-
-            {/* Right Column - Payment */}
-            <div className="space-y-6">
-              <Card className="border-white/10 bg-white/5 p-6">
-                <h3 className="mb-4 text-xl font-semibold text-white">💳 Membresía de Custodia</h3>
+                <h3 className="mb-4 text-xl font-semibold text-white">💳 Custody Membership</h3>
                 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Custodia Mensual</span>
+                    <span className="text-gray-400">Monthly Custody</span>
                     <span className="text-white font-semibold">$25.00 USDC</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Procesamiento</span>
+                    <span className="text-gray-400">Processing</span>
                     <span className="text-white font-semibold">$5.00 USDC</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Gradación Profesional</span>
+                    <span className="text-gray-400">Professional Grading</span>
                     <span className="text-white font-semibold">$15.00 USDC</span>
                   </div>
                   <div className="border-t border-white/10 pt-4">
@@ -589,14 +537,14 @@ export default function TokenizePage() {
                       <div className="flex items-center gap-3">
                         <AlertCircle className="h-5 w-5 text-red-400" />
                         <div>
-                          <h4 className="font-semibold text-red-400">Wallet No Conectada</h4>
-                          <p className="text-sm text-red-300">Conecta tu wallet para proceder con el pago</p>
+                          <h4 className="font-semibold text-red-400">Wallet Not Connected</h4>
+                          <p className="text-sm text-red-300">Connect your wallet to proceed with payment</p>
                         </div>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {/* Información de debug */}
+                      {/* Debug Info - Commented out but kept for future debugging needs
                       <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4">
                         <h4 className="font-semibold text-yellow-400 mb-2">🔍 Debug Info</h4>
                         <div className="text-xs text-yellow-300 space-y-1">
@@ -607,17 +555,18 @@ export default function TokenizePage() {
                           <p>isError: {isError ? '❌' : '✅'}</p>
                           {error && <p>error: {error.message}</p>}
                           <div className="mt-2 pt-2 border-t border-yellow-500/20">
-                            <div className="text-yellow-400 font-semibold">💡 Solución al Error:</div>
+                            <div className="text-yellow-400 font-semibold">💡 Error Solution:</div>
                             <div className="text-xs text-yellow-200 mt-1">
-                              El error "u256_sub Overflow" indica fondos insuficientes en USDC.
-                              <br />• Verifica que tengas al menos $0.01 USDC en tu wallet
-                              <br />• El error multicall-failed también sugiere problemas de balance
+                              The "u256_sub Overflow" error indicates insufficient USDC funds.
+                              <br />• Verify you have at least $0.01 USDC in your wallet
+                              <br />• The multicall-failed error also suggests balance issues
                             </div>
                           </div>
                         </div>
                       </div>
+                      */}
 
-                      {/* Botón 1: Pagar con ChipiPay (Link directo) */}
+                      {/* Button 1: Pay with ChipiPay (Direct Link) */}
                       <Button
                         onClick={() => {
                           const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || "0x4bcc79ce30cc5185b854e6d49f1629c632ec030a3ee41613ce4c464cb8d8d2f"
@@ -628,10 +577,10 @@ export default function TokenizePage() {
                         disabled={paymentCompleted}
                       >
                         <CreditCard className="mr-2 h-4 w-4" />
-                        Pagar con ChipiPay (Link Directo)
+                        Pay with ChipiPay (Direct Link)
                       </Button>
                       
-                      {/* Botón 2: Pagar con Wallet Conectada */}
+                      {/* Button 2: Pay with Connected Wallet */}
                       <Button
                         onClick={handlePayWithWallet}
                         disabled={paymentCompleted || isPayingWithWallet || walletLoading || !chipiWallet}
@@ -640,22 +589,22 @@ export default function TokenizePage() {
                         {isPayingWithWallet ? (
                           <>
                             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            Procesando Pago...
+                            Processing Payment...
                           </>
                         ) : walletLoading ? (
                           <>
                             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                            Cargando Wallet...
+                            Loading Wallet...
                           </>
                         ) : !chipiWallet ? (
                           <>
                             <CreditCard className="mr-2 h-4 w-4" />
-                            Wallet No Disponible
+                            Wallet Not Available
                           </>
                         ) : (
                           <>
                             <CreditCard className="mr-2 h-4 w-4" />
-                            Pagar con Wallet Conectada
+                            Pay with Connected Wallet
                           </>
                         )}
                       </Button>
@@ -667,20 +616,20 @@ export default function TokenizePage() {
                           variant="outline"
                           className="w-full border-yellow-500/20 text-yellow-400 hover:bg-yellow-500/10"
                         >
-                          🔄 Reintentar Carga de Wallet
+                          🔄 Retry Wallet Load
                         </Button>
                       )}
                       {!paymentCompleted && (
                         <Button
                           onClick={() => {
                             setPaymentCompleted(true)
-                            toast.success("¡Pago marcado como completado! (Testing)")
+                            toast.success("Payment marked as completed! (Testing)")
                           }}
                           variant="outline"
                           className="w-full border-green-500/20 text-green-400 hover:bg-green-500/10"
                         >
                           <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Marcar Pago como Completado (Testing)
+                          Mark Payment as Completed (Testing)
                         </Button>
                       )}
 
@@ -689,8 +638,8 @@ export default function TokenizePage() {
                           <div className="flex items-center gap-3">
                             <CheckCircle2 className="h-5 w-5 text-green-400" />
                             <div>
-                              <h4 className="font-semibold text-green-400">Pago Confirmado</h4>
-                              <p className="text-sm text-green-300">Tu membresía de custodia está activa</p>
+                              <h4 className="font-semibold text-green-400">Payment Confirmed</h4>
+                              <p className="text-sm text-green-300">Your custody membership is active</p>
                             </div>
                           </div>
                         </div>
@@ -701,23 +650,75 @@ export default function TokenizePage() {
               </Card>
 
               <Card className="border-white/10 bg-white/5 p-6">
-                <h3 className="mb-4 text-xl font-semibold text-white">📋 Resumen del Item</h3>
+                <h3 className="mb-4 text-xl font-semibold text-white">📋 Item Summary</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Item:</span>
                     <span className="text-white">{itemDetails.name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Categoría:</span>
+                    <span className="text-gray-400">Category:</span>
                     <span className="text-white">{itemDetails.category}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Valor Estimado:</span>
+                    <span className="text-gray-400">Estimated Value:</span>
                     <span className="text-white">${itemDetails.estimatedValue}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Condición:</span>
+                    <span className="text-gray-400">Condition:</span>
                     <span className="text-white">{itemDetails.condition}</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Right Column - Custody Information */}
+            <div className="space-y-6">
+              <Card className="border-white/10 bg-white/5 p-6">
+                <h3 className="mb-4 text-xl font-semibold text-white">📦 Ship to Secure Vault</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                      <span className="text-sm font-bold text-green-400">1</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Secure Packaging</h4>
+                      <p className="text-sm text-gray-400">Wrap your collectible in protective materials</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                      <span className="text-sm font-bold text-green-400">2</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Certified Shipping</h4>
+                      <p className="text-sm text-gray-400">Use insured shipping service with tracking</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                      <span className="text-sm font-bold text-green-400">3</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Secure Storage</h4>
+                      <p className="text-sm text-gray-400">Stored in climate-controlled and insured vault</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="border-white/10 bg-white/5 p-6">
+                <h3 className="mb-4 text-xl font-semibold text-white">🏛️ Shipping Address</h3>
+                <div className="space-y-2 text-sm">
+                  <p className="text-white font-medium">NearMint Vault Services</p>
+                  <p className="text-gray-400">123 Blockchain Street</p>
+                  <p className="text-gray-400">Crypto City, CC 12345</p>
+                  <p className="text-gray-400">United States</p>
+                  <div className="mt-3 rounded-lg bg-blue-500/10 p-3">
+                    <p className="text-xs text-blue-400 font-medium">📋 Shipping reference:</p>
+                    <p className="text-xs text-blue-300 font-mono">NM-{itemDetails.name.slice(0, 8).toUpperCase()}-{Date.now().toString().slice(-6)}</p>
                   </div>
                 </div>
               </Card>
@@ -753,6 +754,21 @@ export default function TokenizePage() {
             <h2 className="mb-4 text-3xl font-bold text-white">Verifying Your Item</h2>
             <p className="mb-8 text-gray-400">Our AI is analyzing your photos and details...</p>
 
+            {/* NFT Image Preview */}
+            {uploadedImages.length > 0 && (
+              <div className="mb-8">
+                <h3 className="mb-4 text-xl font-semibold text-white">NFT Preview</h3>
+                <div className="relative mx-auto aspect-square max-w-md overflow-hidden rounded-lg">
+                  <Image 
+                    src={uploadedImages[0] || "/placeholder.svg"} 
+                    alt="NFT Preview" 
+                    fill 
+                    className="object-cover" 
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="mb-8 space-y-4">
               <div className="flex items-center justify-between rounded-lg bg-white/5 p-4">
                 <span className="text-white">Image Quality Check</span>
@@ -774,8 +790,8 @@ export default function TokenizePage() {
                 <div className="flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 text-red-400" />
                   <div>
-                    <h3 className="font-semibold text-red-400">Wallet No Conectada</h3>
-                    <p className="text-sm text-red-300">Conecta tu wallet para poder tokenizar el coleccionable</p>
+                    <h3 className="font-semibold text-red-400">Wallet Not Connected</h3>
+                    <p className="text-sm text-red-300">Connect your wallet to tokenize the collectible</p>
                   </div>
                 </div>
               </div>
@@ -819,11 +835,11 @@ export default function TokenizePage() {
               <Button
                 onClick={() => {
                   if (!isConnected || !address) {
-                    toast.error("Conecta tu wallet primero")
+                    toast.error("Connect your wallet first")
                     return
                   }
 
-                  // Generar metadata del NFT
+                  // Generate NFT metadata
                   const nftMetadata = {
                     name: itemDetails.name,
                     description: itemDetails.description,
@@ -834,7 +850,7 @@ export default function TokenizePage() {
                     tokenizedDate: new Date().toISOString().split('T')[0]
                   }
                   
-                  // Guardar datos pendientes y mostrar diálogo de PIN
+                  // Save pending data and show PIN dialog
                   setPendingTokenization({
                     metadata: nftMetadata
                   })
@@ -865,31 +881,31 @@ export default function TokenizePage() {
               <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/20">
                 <CheckCircle2 className="h-10 w-10 text-green-400" />
               </div>
-              <h2 className="mb-4 text-3xl font-bold text-white">¡Tokenización Exitosa!</h2>
-              <p className="mb-8 text-gray-400">Tu coleccionable ha sido convertido en NFT digital</p>
+              <h2 className="mb-4 text-3xl font-bold text-white">Tokenization Successful!</h2>
+              <p className="mb-8 text-gray-400">Your collectible has been converted to a digital NFT</p>
 
               {/* NFT Information */}
               <div className="mb-8 rounded-lg border border-white/10 bg-white/5 p-6 text-left">
-                <h3 className="mb-4 text-xl font-semibold text-white">Información del NFT</h3>
+                <h3 className="mb-4 text-xl font-semibold text-white">NFT Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-400">Token ID:</span>
                     <p className="text-white font-medium">#{tokenizationResult.tokenId}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Nombre:</span>
+                    <span className="text-gray-400">Name:</span>
                     <p className="text-white font-medium">{tokenizationResult.metadata.name}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Categoría:</span>
+                    <span className="text-gray-400">Category:</span>
                     <p className="text-white font-medium">{tokenizationResult.metadata.category}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Condición:</span>
+                    <span className="text-gray-400">Condition:</span>
                     <p className="text-white font-medium">{tokenizationResult.metadata.condition}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Valor Estimado:</span>
+                    <span className="text-gray-400">Estimated Value:</span>
                     <p className="text-white font-medium">${tokenizationResult.metadata.estimatedValue}</p>
                   </div>
                 </div>
@@ -925,19 +941,19 @@ export default function TokenizePage() {
                   variant="outline"
                   className="border-white/10 bg-white/5 text-white hover:bg-white/10"
                 >
-                  Tokenizar Otro
+                  Tokenize Another
                 </Button>
                 <Button
                   onClick={() => window.open(`https://starkscan.co/tx/${tokenizationResult.transactionHash}`, '_blank')}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
-                  Ver Transacción
+                  View Transaction
                 </Button>
                 <Button
                   onClick={() => window.open('https://starkscan.co/contract/0x04b820da27ba5d3746c42b3a2b5d30aac509e2c683c4c27b175ca61df97ac98d', '_blank')}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
-                  Ver Contrato
+                  View Contract
                 </Button>
               </div>
             </div>
@@ -950,8 +966,8 @@ export default function TokenizePage() {
         open={showPinDialog}
         onOpenChange={setShowPinDialog}
         onSubmit={handlePinSubmit}
-        title="Confirmar Tokenización"
-        description="Ingresa tu PIN de 4 dígitos para autorizar la creación del NFT"
+        title="Confirm Tokenization"
+        description="Enter your 4-digit PIN to authorize NFT creation"
       />
     </div>
   )

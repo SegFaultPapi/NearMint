@@ -51,23 +51,23 @@ export function IPFSUploader({
     Array.from(files).forEach(file => {
       // Validar tipo de archivo
       if (!acceptedTypes.includes(file.type)) {
-        alert(`Tipo de archivo no válido: ${file.type}. Solo se permiten: ${acceptedTypes.join(', ')}`)
+        alert(`Invalid file type: ${file.type}. Only allowed: ${acceptedTypes.join(', ')}`)
         return
       }
 
       // Validar tamaño
       if (file.size > maxSize * 1024 * 1024) {
-        alert(`Archivo demasiado grande: ${file.name}. Máximo ${maxSize}MB`)
+        alert(`File too large: ${file.name}. Maximum ${maxSize}MB`)
         return
       }
 
       // Validar cantidad máxima
       if (uploadedFiles.length + newFiles.length >= maxFiles) {
-        alert(`Máximo ${maxFiles} archivos permitidos`)
+        alert(`Maximum ${maxFiles} files allowed`)
         return
       }
 
-      // Crear preview para imágenes
+      // Create preview for images
       const preview = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
 
       newFiles.push({
@@ -100,7 +100,7 @@ export function IPFSUploader({
       const newFiles = [...prev]
       const file = newFiles[index]
       
-      // Limpiar preview URL
+      // Clean preview URL
       if (file.preview) {
         URL.revokeObjectURL(file.preview)
       }
@@ -116,7 +116,7 @@ export function IPFSUploader({
     const files = uploadedFiles.map(uf => uf.file)
     const results = await uploadMultipleFiles(files)
 
-    // Actualizar archivos con resultados
+    // Update files with results
     setUploadedFiles(prev => 
       prev.map((uf, index) => ({
         ...uf,
@@ -124,7 +124,7 @@ export function IPFSUploader({
       }))
     )
 
-    // Llamar callback si se proporciona
+    // Call callback if provided
     if (onUploadComplete) {
       onUploadComplete(results)
     }
@@ -155,21 +155,21 @@ export function IPFSUploader({
         <div className="p-8 text-center">
           <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Subir imágenes a IPFS
+            Upload Images
           </h3>
           <p className="text-gray-600 mb-4">
-            Arrastra y suelta archivos aquí o haz clic para seleccionar
+            Drag and drop files here or click to select
           </p>
           <div className="text-sm text-gray-500 mb-4">
-            <p>Tipos permitidos: {acceptedTypes.map(type => type.split('/')[1].toUpperCase()).join(', ')}</p>
-            <p>Tamaño máximo: {maxSize}MB por archivo</p>
-            <p>Máximo {maxFiles} archivos</p>
+            <p>Allowed types: {acceptedTypes.map(type => type.split('/')[1].toUpperCase()).join(', ')}</p>
+            <p>Maximum size: {maxSize}MB per file</p>
+            <p>Maximum {maxFiles} files</p>
           </div>
           <Button 
             onClick={() => fileInputRef.current?.click()}
             className="bg-orange-500 hover:bg-orange-600"
           >
-            Seleccionar Archivos
+            Select Files
           </Button>
           <input
             ref={fileInputRef}
@@ -187,7 +187,7 @@ export function IPFSUploader({
         <Card className="p-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Subiendo archivos...</span>
+              <span className="text-sm font-medium">Uploading files...</span>
               <span className="text-sm text-gray-500">{uploadProgress}%</span>
             </div>
             <Progress value={uploadProgress} className="w-full" />
@@ -199,7 +199,7 @@ export function IPFSUploader({
       {uploadedFiles.length > 0 && (
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-semibold">Archivos seleccionados ({uploadedFiles.length})</h4>
+            <h4 className="font-semibold">Selected files ({uploadedFiles.length})</h4>
             <div className="flex gap-2">
               {!isUploading && (
                 <>
@@ -209,7 +209,7 @@ export function IPFSUploader({
                     disabled={uploadedFiles.some(f => f.result)}
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Subir a IPFS
+                    Upload Images
                   </Button>
                   <Button 
                     variant="outline" 
@@ -217,7 +217,7 @@ export function IPFSUploader({
                     disabled={isUploading}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Limpiar
+                    Clear
                   </Button>
                 </>
               )}
@@ -261,7 +261,7 @@ export function IPFSUploader({
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-5 w-5 text-green-500" />
                         <Badge className="bg-green-100 text-green-800">
-                          Subido
+                          Uploaded
                         </Badge>
                         {uploadedFile.result.ipfsUrl && (
                           <Button
