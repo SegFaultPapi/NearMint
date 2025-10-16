@@ -352,14 +352,14 @@ export default function Home() {
                 </li>
               </ul>
             </div>
-            <div className="relative group">
+            <div className="relative group max-w-[400px] mx-auto">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl blur-2xl group-hover:blur-xl transition-smooth" />
               <div className="relative glass-effect rounded-3xl p-2 shadow-2xl hover:shadow-primary/20 transition-smooth">
                 <Image
                   src="/images/card-1.png"
                   alt="Collectibles"
-                  width={600}
-                  height={400}
+                  width={400}
+                  height={300}
                   className="rounded-2xl"
                 />
               </div>
@@ -368,14 +368,14 @@ export default function Home() {
 
           {/* Step 2 */}
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-            <div className="relative order-2 lg:order-1 group">
+            <div className="relative order-2 lg:order-1 group max-w-[400px] mx-auto">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-success/10 rounded-3xl blur-2xl group-hover:blur-xl transition-smooth" />
               <div className="relative glass-effect rounded-3xl p-2 shadow-2xl hover:shadow-accent/20 transition-smooth">
                 <Image
-                  src="/images/card-2.png"
+                  src="/images/landing-1.PNG"
                   alt="Digital tokenization"
-                  width={600}
-                  height={400}
+                  width={400}
+                  height={300}
                   className="rounded-2xl"
                 />
               </div>
