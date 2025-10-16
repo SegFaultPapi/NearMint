@@ -241,7 +241,7 @@ export default function DashboardPage() {
               </div>
             </Card>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {filteredCollectibles.map((item) => (
               <Card
                 key={item.id}
@@ -272,21 +272,21 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
-                  <div className="mb-4">
-                    <h3 className="mb-1 text-xl font-bold text-white">{item.name}</h3>
+                <div className="p-4">
+                  <div className="mb-3">
+                    <h3 className="mb-1 text-lg font-bold text-white">{item.name}</h3>
                     <p className="text-sm text-gray-400">{item.category}</p>
                   </div>
 
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-3 flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-400">Current Value</p>
-                      <p className="text-2xl font-bold text-white">{item.value}</p>
+                      <p className="text-xl font-bold text-white">{item.value}</p>
                     </div>
                     <Badge className="bg-green-500/20 text-green-400">{item.appreciation}</Badge>
                   </div>
 
-                  <div className="mb-4 flex items-center gap-2 text-sm text-gray-400">
+                  <div className="mb-3 flex items-center gap-2 text-sm text-gray-400">
                     <Calendar className="h-4 w-4" />
                     <span>Acquired {item.acquired}</span>
                   </div>
@@ -294,11 +294,11 @@ export default function DashboardPage() {
                   <div className="flex gap-2">
                     {item.status === "available" ? (
                       <>
-                        <Button className="flex-1 bg-orange-500 text-white hover:bg-orange-600">Get Loan</Button>
+                        <Button className="flex-1 bg-orange-500 text-white hover:bg-orange-600 text-sm">Get Loan</Button>
                         {item.tokenized && item.transactionHash ? (
                           <Button
                             variant="outline"
-                            className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/10"
+                            className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/10 text-sm"
                             onClick={() => window.open(`https://voyager.online/tx/${item.transactionHash}`, '_blank')}
                           >
                             <ExternalLink className="mr-2 h-4 w-4" />
@@ -307,7 +307,7 @@ export default function DashboardPage() {
                         ) : (
                           <Button
                             variant="outline"
-                            className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/10"
+                            className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/10 text-sm"
                           >
                             Detalles
                           </Button>
@@ -315,10 +315,10 @@ export default function DashboardPage() {
                       </>
                     ) : (
                       <>
-                        <Button className="flex-1 bg-cyan-500 text-white hover:bg-cyan-600">Repay Loan</Button>
+                        <Button className="flex-1 bg-cyan-500 text-white hover:bg-cyan-600 text-sm">Repay Loan</Button>
                         <Button
                           variant="outline"
-                          className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/10"
+                          className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/10 text-sm"
                         >
                           Details
                         </Button>

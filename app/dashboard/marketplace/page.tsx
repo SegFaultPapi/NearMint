@@ -138,7 +138,7 @@ export default function MarketplacePage() {
       </Card>
 
       {/* Marketplace Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {filteredItems.map((item) => (
           <Card
             key={item.id}
@@ -167,16 +167,16 @@ export default function MarketplacePage() {
             </div>
 
             {/* Content */}
-            <div className="p-6">
-              <div className="mb-4">
-                <h3 className="mb-1 text-xl font-bold text-white">{item.name}</h3>
+            <div className="p-4">
+              <div className="mb-3">
+                <h3 className="mb-1 text-lg font-bold text-white">{item.name}</h3>
                 <p className="text-sm text-gray-400">{item.category}</p>
               </div>
 
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Price</p>
-                  <p className="text-2xl font-bold text-cyan-400">${item.price.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-cyan-400">${item.price.toLocaleString()}</p>
                 </div>
                 <div className="flex items-center gap-1 text-gray-400">
                   <Heart className="h-4 w-4" />
@@ -184,7 +184,7 @@ export default function MarketplacePage() {
                 </div>
               </div>
 
-              <div className="mb-4 flex items-center gap-2 text-sm text-gray-400">
+              <div className="mb-3 flex items-center gap-2 text-sm text-gray-400">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-purple-600">
                   <span className="text-xs font-bold text-white">0x</span>
                 </div>
@@ -192,11 +192,11 @@ export default function MarketplacePage() {
               </div>
 
               <div className="flex gap-2">
-                <Button className="flex-1 gap-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/30 transition-all duration-200 hover:scale-105 hover:shadow-cyan-500/50">
+                <Button className="flex-1 gap-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/30 transition-all duration-200 hover:scale-105 hover:shadow-cyan-500/50 text-sm">
                   <ShoppingCart className="h-4 w-4" />
                   Buy Now
                 </Button>
-                <Button variant="outline" className="border-white/10 text-white hover:bg-white/10 bg-transparent">
+                <Button variant="outline" className="border-white/10 text-white hover:bg-white/10 bg-transparent text-sm">
                   Details
                 </Button>
               </div>
