@@ -18,6 +18,9 @@ import { useUserNFTs } from "@/hooks/use-user-nfts"
 import { IPFSUploader } from "@/components/ipfs-uploader"
 import { UploadResult } from "@/hooks/use-ipfs-upload"
 import { PayWithChipiButton } from "@/components/pay-with-chipi-button"
+import { useAuth } from "@clerk/nextjs"
+import { useTransfer } from "@chipi-stack/nextjs"
+import { useWalletWithAuth } from "@/hooks/use-wallet-with-auth"
 
 export default function TokenizePage() {
   const [step, setStep] = useState(1)
@@ -38,12 +41,113 @@ export default function TokenizePage() {
   const [pendingTokenization, setPendingTokenization] = useState<{
     metadata: any
   } | null>(null)
+  const [isPayingWithWallet, setIsPayingWithWallet] = useState(false)
   const [paymentCompleted, setPaymentCompleted] = useState(false)
+  
+  // Función para pagar con wallet conectada
+  const handlePayWithWallet = async () => {
+    if (!isConnected || !address) {
+      toast.error("Wallet no conectada. Conecta tu wallet primero.")
+      return
+    }
+
+    if (!chipiWallet) {
+      toast.error("Wallet de Chipi no disponible. Intenta recargar la página.")
+      return
+    }
+
+    try {
+      setIsPayingWithWallet(true)
+      
+      // Obtener token de autenticación
+      const bearerToken = await getToken()
+      if (!bearerToken) {
+        throw new Error("No se pudo obtener el token de autenticación")
+      }
+
+      // Solicitar PIN de la wallet
+      const encryptKey = prompt("Ingresa tu PIN de wallet para autorizar el pago:") || ""
+      if (!encryptKey) {
+        throw new Error("PIN requerido para autorizar el pago")
+      }
+
+      const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || "0x4bcc79ce30cc5185b854e6d49f1629c632ec030a3ee41613ce4c464cb8d8d2f"
+      
+      console.log('💳 Iniciando pago con wallet:', {
+        userWallet: address,
+        merchantWallet,
+        amount: 0.01,
+        token: 'USDC',
+        chipiWallet: chipiWallet
+      })
+
+      // Mostrar mensaje de verificación de balance
+      toast.info("Verificando balance de USDC...", { position: "bottom-center" })
+
+      // Realizar transferencia usando ChipiPay SDK con la wallet correctamente estructurada
+      const txHash = await transferAsync({
+        params: {
+          amount: "0.01",
+          encryptKey,
+          wallet: chipiWallet, // Usar la wallet de Chipi correctamente estructurada
+          token: "USDC" as any,
+          recipient: merchantWallet,
+        },
+        bearerToken: bearerToken,
+      })
+
+      console.log('✅ Pago exitoso:', txHash)
+      
+      toast.success("¡Pago exitoso! ✨", { 
+        position: "bottom-center",
+        description: `Transacción: ${txHash.slice(0, 10)}...`
+      })
+
+      setPaymentCompleted(true)
+
+    } catch (error: any) {
+      console.error('❌ Error en pago:', error)
+      
+      let errorMessage = "Error desconocido en el pago"
+      
+      // Manejar errores específicos de Starknet/Chipi
+      if (error.message?.includes("u256_sub Overflow") || error.message?.includes("Overflow")) {
+        errorMessage = "Fondos insuficientes en tu wallet USDC"
+      } else if (error.message?.includes("multicall-failed")) {
+        errorMessage = "Error en la transacción multicall. Verifica tu balance de USDC"
+      } else if (error.message?.includes("ENTRYPOINT_FAILED")) {
+        errorMessage = "Error en el punto de entrada de la transacción"
+      } else if (error.message?.includes("insufficient")) {
+        errorMessage = "Fondos insuficientes en tu wallet"
+      } else if (error.message?.includes("rejected")) {
+        errorMessage = "Transacción rechazada por el usuario"
+      } else if (error.message?.includes("network")) {
+        errorMessage = "Error de red. Intenta nuevamente"
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      toast.error(`Error en el pago: ${errorMessage}`, { position: "bottom-center" })
+      
+      // Mostrar información adicional para debugging
+      console.log('🔍 Detalles del error:', {
+        errorType: error.type,
+        contractAddress: error.contractAddress,
+        revertError: error.revertError
+      })
+      
+    } finally {
+      setIsPayingWithWallet(false)
+    }
+  }
   
   // Hooks para tokenización real
   const { address, isConnected } = useWallet()
   const { mintNFT, isLoading: mintLoading, error: mintError } = useNearMintNFT()
   const { addNFT } = useUserNFTs()
+  const { getToken } = useAuth()
+  const { transferAsync } = useTransfer()
+  const { wallet: chipiWallet, isLoading: walletLoading, isError, error, refetch } = useWalletWithAuth()
 
   // Manejar subida de imágenes a IPFS
   const handleIPFSUploadComplete = (results: UploadResult[]) => {
@@ -474,7 +578,7 @@ export default function TokenizePage() {
                   <div className="border-t border-white/10 pt-4">
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-semibold text-white">Total</span>
-                      <span className="text-xl font-bold text-orange-400">$45.00 USDC</span>
+                      <span className="text-xl font-bold text-orange-400">$0.01 USDC</span>
                     </div>
                   </div>
                 </div>
@@ -492,31 +596,80 @@ export default function TokenizePage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {/* Botón usando ChipiPay directo */}
+                      {/* Información de debug */}
+                      <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4">
+                        <h4 className="font-semibold text-yellow-400 mb-2">🔍 Debug Info</h4>
+                        <div className="text-xs text-yellow-300 space-y-1">
+                          <p>isConnected: {isConnected ? '✅' : '❌'}</p>
+                          <p>address: {address ? `${address.slice(0, 10)}...` : 'null'}</p>
+                          <p>walletLoading: {walletLoading ? '⏳' : '✅'}</p>
+                          <p>chipiWallet: {chipiWallet ? '✅' : '❌'}</p>
+                          <p>isError: {isError ? '❌' : '✅'}</p>
+                          {error && <p>error: {error.message}</p>}
+                          <div className="mt-2 pt-2 border-t border-yellow-500/20">
+                            <div className="text-yellow-400 font-semibold">💡 Solución al Error:</div>
+                            <div className="text-xs text-yellow-200 mt-1">
+                              El error "u256_sub Overflow" indica fondos insuficientes en USDC.
+                              <br />• Verifica que tengas al menos $0.01 USDC en tu wallet
+                              <br />• El error multicall-failed también sugiere problemas de balance
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Botón 1: Pagar con ChipiPay (Link directo) */}
                       <Button
                         onClick={() => {
                           const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || "0x4bcc79ce30cc5185b854e6d49f1629c632ec030a3ee41613ce4c464cb8d8d2f"
-                          const chipiPayUrl = `https://pay.chipipay.com?starknetWallet=${merchantWallet}&usdAmount=45.00`
+                          const chipiPayUrl = `https://pay.chipipay.com?starknetWallet=${merchantWallet}&usdAmount=0.01`
                           window.open(chipiPayUrl, '_blank')
                         }}
                         className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                        disabled={paymentCompleted}
                       >
                         <CreditCard className="mr-2 h-4 w-4" />
-                        Pagar $45.00 USDC con ChipiPay
+                        Pagar con ChipiPay (Link Directo)
                       </Button>
                       
-                      {/* Botón usando el componente simplificado */}
-                      <PayWithChipiButton
-                        amountUsd={45.00}
-                        label="Pagar con ChipiPay (Componente)"
-                        onPaymentSuccess={() => {
-                          setPaymentCompleted(true)
-                          toast.success("¡Pago completado! Procede a la verificación")
-                        }}
-                        disabled={paymentCompleted}
-                      />
+                      {/* Botón 2: Pagar con Wallet Conectada */}
+                      <Button
+                        onClick={handlePayWithWallet}
+                        disabled={paymentCompleted || isPayingWithWallet || walletLoading || !chipiWallet}
+                        className="w-full bg-purple-500 hover:bg-purple-600 text-white"
+                      >
+                        {isPayingWithWallet ? (
+                          <>
+                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Procesando Pago...
+                          </>
+                        ) : walletLoading ? (
+                          <>
+                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                            Cargando Wallet...
+                          </>
+                        ) : !chipiWallet ? (
+                          <>
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Wallet No Disponible
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="mr-2 h-4 w-4" />
+                            Pagar con Wallet Conectada
+                          </>
+                        )}
+                      </Button>
                       
-                      {/* Botón para marcar pago como completado (para testing) */}
+                      {/* Botón para reintentar carga de wallet */}
+                      {isError && (
+                        <Button
+                          onClick={() => refetch()}
+                          variant="outline"
+                          className="w-full border-yellow-500/20 text-yellow-400 hover:bg-yellow-500/10"
+                        >
+                          🔄 Reintentar Carga de Wallet
+                        </Button>
+                      )}
                       {!paymentCompleted && (
                         <Button
                           onClick={() => {

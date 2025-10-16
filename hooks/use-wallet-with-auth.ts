@@ -1,39 +1,74 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useState, useEffect } from "react"
 import { useAuth, useUser } from "@clerk/nextjs"
 import { useGetWallet } from "@chipi-stack/nextjs"
 
 export function useWalletWithAuth() {
   const { isLoaded, user } = useUser()
   const { getToken, isLoaded: isUserLoaded } = useAuth()
-  const { getWalletAsync } = useGetWallet()
+  const { fetchWallet } = useGetWallet() // Usar fetchWallet en lugar de getWalletAsync
   
-  const query = useQuery({
-    queryKey: ["wallet"],
-    enabled: isLoaded && isUserLoaded && !!user?.id,
-    queryFn: async () => {
+  const [wallet, setWallet] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const loadWallet = async () => {
+    try {
+      setIsLoading(true)
+      setIsError(false)
+      setError(null)
+
+      if (!isLoaded || !isUserLoaded || !user?.id) {
+        throw new Error("User not loaded")
+      }
+
       const token = await getToken()
-      if (!token || !user?.id) throw new Error("Missing auth data")
+      if (!token) {
+        throw new Error("No auth token")
+      }
+
+      console.log('🔍 Fetching wallet for user:', user.id)
       
-      const wallet = await getWalletAsync({
-        externalUserId: user.id,
-        bearerToken: token,
+      const walletData = await fetchWallet({
+        params: {
+          externalUserId: user.id,
+        },
+        getBearerToken: async () => token,
       })
       
-      if (!wallet) throw new Error("Wallet not found")
-      return wallet
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: false,
-  })
+      console.log('📦 Wallet data received:', walletData)
+      
+      if (!walletData) {
+        throw new Error("Wallet not found")
+      }
+      
+      setWallet(walletData)
+    } catch (err) {
+      console.error('❌ Error fetching wallet:', err)
+      setIsError(true)
+      setError(err instanceof Error ? err : new Error("Unknown error"))
+      setWallet(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isLoaded && isUserLoaded && user?.id) {
+      loadWallet()
+    } else {
+      setIsLoading(false)
+      setWallet(null)
+    }
+  }, [isLoaded, isUserLoaded, user?.id])
 
   return {
-    wallet: query.data,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
+    wallet,
+    isLoading,
+    isError,
+    error,
+    refetch: loadWallet,
   }
 }
