@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Upload, Scan, CheckCircle2, AlertCircle, Camera, FileText } from "lucide-react"
+import { Upload, Scan, CheckCircle2, AlertCircle, Camera, FileText, CreditCard } from "lucide-react"
 import Image from "next/image"
 import { useNearMintNFT } from "@/hooks/use-nearmint-nft"
 import { useWallet } from "@/contexts/wallet-context"
@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { useUserNFTs } from "@/hooks/use-user-nfts"
 import { IPFSUploader } from "@/components/ipfs-uploader"
 import { UploadResult } from "@/hooks/use-ipfs-upload"
+import { PayWithChipiButton } from "@/components/pay-with-chipi-button"
 
 export default function TokenizePage() {
   const [step, setStep] = useState(1)
@@ -37,6 +38,7 @@ export default function TokenizePage() {
   const [pendingTokenization, setPendingTokenization] = useState<{
     metadata: any
   } | null>(null)
+  const [paymentCompleted, setPaymentCompleted] = useState(false)
   
   // Hooks para tokenización real
   const { address, isConnected } = useWallet()
@@ -133,7 +135,8 @@ export default function TokenizePage() {
           {[
             { num: 1, label: "Upload Photos" },
             { num: 2, label: "Item Details" },
-            { num: 3, label: "Verification" },
+            { num: 3, label: "Custody & Payment" },
+            { num: 4, label: "Verification" },
           ].map((s, idx) => (
             <div key={s.num} className="flex flex-1 items-center">
               <div className="flex items-center gap-3">
@@ -150,7 +153,7 @@ export default function TokenizePage() {
                   {s.label}
                 </span>
               </div>
-              {idx < 2 && (
+              {idx < 3 && (
                 <div
                   className={`mx-4 h-0.5 flex-1 transition-all duration-300 ${
                     step > s.num ? "bg-orange-500" : "bg-white/10"
@@ -377,15 +380,218 @@ export default function TokenizePage() {
                 onClick={() => setStep(3)}
                 className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50"
               >
-                Continue to Verification
+                Continue to Custody
               </Button>
             </div>
           </div>
         </Card>
       )}
 
-      {/* Step 3: Verification */}
+      {/* Step 3: Custody & Payment */}
       {step === 3 && (
+        <Card className="mx-auto max-w-4xl border-white/10 bg-black/40 p-8 backdrop-blur-xl">
+          <div className="text-center mb-8">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-500/20">
+              <CreditCard className="h-10 w-10 text-blue-400" />
+            </div>
+            <h2 className="mb-4 text-3xl font-bold text-white">Custodia Segura & Pago</h2>
+            <p className="text-gray-400">
+              Envía tu coleccionable a nuestras vaults seguras y paga la membresía de custodia
+            </p>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Left Column - Custody Information */}
+            <div className="space-y-6">
+              <Card className="border-white/10 bg-white/5 p-6">
+                <h3 className="mb-4 text-xl font-semibold text-white">📦 Envío a Vault Segura</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                      <span className="text-sm font-bold text-green-400">1</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Empaque Seguro</h4>
+                      <p className="text-sm text-gray-400">Envuelve tu coleccionable en materiales protectores</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                      <span className="text-sm font-bold text-green-400">2</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Envío Certificado</h4>
+                      <p className="text-sm text-gray-400">Usa servicio de envío con seguro y tracking</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500/20">
+                      <span className="text-sm font-bold text-green-400">3</span>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Almacenamiento Seguro</h4>
+                      <p className="text-sm text-gray-400">Guardado en vault climatizada y asegurada</p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="border-white/10 bg-white/5 p-6">
+                <h3 className="mb-4 text-xl font-semibold text-white">🏛️ Dirección de Envío</h3>
+                <div className="space-y-2 text-sm">
+                  <p className="text-white font-medium">NearMint Vault Services</p>
+                  <p className="text-gray-400">123 Blockchain Street</p>
+                  <p className="text-gray-400">Crypto City, CC 12345</p>
+                  <p className="text-gray-400">United States</p>
+                  <div className="mt-3 rounded-lg bg-blue-500/10 p-3">
+                    <p className="text-xs text-blue-400 font-medium">📋 Referencia de envío:</p>
+                    <p className="text-xs text-blue-300 font-mono">NM-{itemDetails.name.slice(0, 8).toUpperCase()}-{Date.now().toString().slice(-6)}</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Right Column - Payment */}
+            <div className="space-y-6">
+              <Card className="border-white/10 bg-white/5 p-6">
+                <h3 className="mb-4 text-xl font-semibold text-white">💳 Membresía de Custodia</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Custodia Mensual</span>
+                    <span className="text-white font-semibold">$25.00 USDC</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Procesamiento</span>
+                    <span className="text-white font-semibold">$5.00 USDC</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Gradación Profesional</span>
+                    <span className="text-white font-semibold">$15.00 USDC</span>
+                  </div>
+                  <div className="border-t border-white/10 pt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-semibold text-white">Total</span>
+                      <span className="text-xl font-bold text-orange-400">$45.00 USDC</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  {!isConnected ? (
+                    <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4">
+                      <div className="flex items-center gap-3">
+                        <AlertCircle className="h-5 w-5 text-red-400" />
+                        <div>
+                          <h4 className="font-semibold text-red-400">Wallet No Conectada</h4>
+                          <p className="text-sm text-red-300">Conecta tu wallet para proceder con el pago</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Botón usando ChipiPay directo */}
+                      <Button
+                        onClick={() => {
+                          const merchantWallet = process.env.NEXT_PUBLIC_MERCHANT_WALLET || "0x4bcc79ce30cc5185b854e6d49f1629c632ec030a3ee41613ce4c464cb8d8d2f"
+                          const chipiPayUrl = `https://pay.chipipay.com?starknetWallet=${merchantWallet}&usdAmount=45.00`
+                          window.open(chipiPayUrl, '_blank')
+                        }}
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Pagar $45.00 USDC con ChipiPay
+                      </Button>
+                      
+                      {/* Botón usando el componente simplificado */}
+                      <PayWithChipiButton
+                        amountUsd={45.00}
+                        label="Pagar con ChipiPay (Componente)"
+                        onPaymentSuccess={() => {
+                          setPaymentCompleted(true)
+                          toast.success("¡Pago completado! Procede a la verificación")
+                        }}
+                        disabled={paymentCompleted}
+                      />
+                      
+                      {/* Botón para marcar pago como completado (para testing) */}
+                      {!paymentCompleted && (
+                        <Button
+                          onClick={() => {
+                            setPaymentCompleted(true)
+                            toast.success("¡Pago marcado como completado! (Testing)")
+                          }}
+                          variant="outline"
+                          className="w-full border-green-500/20 text-green-400 hover:bg-green-500/10"
+                        >
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Marcar Pago como Completado (Testing)
+                        </Button>
+                      )}
+
+                      {paymentCompleted && (
+                        <div className="rounded-lg border border-green-500/20 bg-green-500/10 p-4">
+                          <div className="flex items-center gap-3">
+                            <CheckCircle2 className="h-5 w-5 text-green-400" />
+                            <div>
+                              <h4 className="font-semibold text-green-400">Pago Confirmado</h4>
+                              <p className="text-sm text-green-300">Tu membresía de custodia está activa</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              <Card className="border-white/10 bg-white/5 p-6">
+                <h3 className="mb-4 text-xl font-semibold text-white">📋 Resumen del Item</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Item:</span>
+                    <span className="text-white">{itemDetails.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Categoría:</span>
+                    <span className="text-white">{itemDetails.category}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Valor Estimado:</span>
+                    <span className="text-white">${itemDetails.estimatedValue}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Condición:</span>
+                    <span className="text-white">{itemDetails.condition}</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          <div className="mt-8 flex gap-3">
+            <Button
+              onClick={() => setStep(2)}
+              variant="outline"
+              className="flex-1 border-white/10 bg-white/5 text-white hover:bg-white/10"
+            >
+              Back to Details
+            </Button>
+            <Button
+              onClick={() => setStep(4)}
+              disabled={!paymentCompleted}
+              className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Continue to Verification
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Step 4: Verification */}
+      {step === 4 && (
         <Card className="mx-auto max-w-3xl border-white/10 bg-black/40 p-8 backdrop-blur-xl">
           <div className="text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-cyan-500/20">
@@ -451,11 +657,11 @@ export default function TokenizePage() {
 
             <div className="flex gap-3">
               <Button
-                onClick={() => setStep(2)}
+                onClick={() => setStep(3)}
                 variant="outline"
                 className="flex-1 border-white/10 bg-white/5 text-white hover:bg-white/10"
               >
-                Back to Details
+                Back to Custody
               </Button>
               <Button
                 onClick={() => {
