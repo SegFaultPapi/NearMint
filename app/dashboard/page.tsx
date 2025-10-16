@@ -18,93 +18,28 @@ import {
   Sparkles,
   Calendar,
   Zap,
+  Loader2,
+  ExternalLink,
 } from "lucide-react"
 import Image from "next/image"
-
-const collectibles = [
-  {
-    id: "1",
-    name: "Charizard 1st Edition",
-    category: "Pokemon",
-    value: "$5,200",
-    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800",
-    status: "available",
-    rarity: "Legendary",
-    acquired: "2024-01-15",
-    appreciation: "+15%",
-    tokenized: false,
-  },
-  {
-    id: "2",
-    name: "Mickey Mantle 1952",
-    category: "Baseball",
-    value: "$8,500",
-    image: "https://images.unsplash.com/photo-1611794520505-b841584a95dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800",
-    status: "pawned",
-    rarity: "Rare",
-    acquired: "2023-11-20",
-    appreciation: "+22%",
-    tokenized: true,
-    tokenId: "1",
-  },
-  {
-    id: "3",
-    name: "Black Lotus Alpha",
-    category: "Magic",
-    value: "$12,000",
-    image: "https://images.unsplash.com/photo-1609162310240-84de2dae2337?ixlib=rb-4.0.3&auto=format&fit=crop&w=800",
-    status: "available",
-    rarity: "Mythic",
-    acquired: "2024-02-10",
-    appreciation: "+8%",
-    tokenized: false,
-  },
-  {
-    id: "4",
-    name: "Pikachu Illustrator",
-    category: "Pokemon",
-    value: "$3,800",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800",
-    status: "available",
-    rarity: "Legendary",
-    acquired: "2024-03-05",
-    appreciation: "+12%",
-    tokenized: true,
-    tokenId: "2",
-  },
-  {
-    id: "5",
-    name: "Babe Ruth Rookie",
-    category: "Baseball",
-    value: "$6,200",
-    image: "https://images.unsplash.com/photo-1549993585-5fb3ab12b2d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800",
-    status: "available",
-    rarity: "Rare",
-    acquired: "2023-12-18",
-    appreciation: "+18%",
-    tokenized: false,
-  },
-  {
-    id: "6",
-    name: "Mox Sapphire",
-    category: "Magic",
-    value: "$4,500",
-    image: "https://images.unsplash.com/photo-1611794520505-b841584a95dd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800",
-    status: "pawned",
-    rarity: "Rare",
-    acquired: "2024-01-28",
-    appreciation: "+10%",
-    tokenized: true,
-    tokenId: "3",
-  },
-]
+import { useUserNFTs } from "@/hooks/use-user-nfts"
+import Link from "next/link"
 
 export default function DashboardPage() {
   const [filter, setFilter] = useState("all")
+  const { nfts, isLoading, totalValue } = useUserNFTs()
 
-  const filteredCollectibles = filter === "all" ? collectibles : collectibles.filter((item) => item.status === filter)
-  const tokenizedCount = collectibles.filter(item => item.tokenized).length
-  const availableCount = collectibles.filter(item => item.status === "available").length
+  const filteredCollectibles = filter === "all" ? nfts : nfts.filter((item) => item.status === filter)
+  const tokenizedCount = nfts.filter(item => item.tokenized).length
+  const availableCount = nfts.filter(item => item.status === "available").length
+  
+  // Calcular total disponible
+  const availableValue = nfts
+    .filter(item => item.status === "available")
+    .reduce((sum, nft) => {
+      const value = parseFloat(nft.value.replace(/[$,]/g, ''))
+      return sum + (isNaN(value) ? 0 : value)
+    }, 0)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0a0a0a] to-orange-950/20 p-8">
@@ -130,7 +65,13 @@ export default function DashboardPage() {
               </Badge>
             </div>
             <p className="mb-1 text-sm text-gray-400">Total Portfolio Value</p>
-            <p className="text-3xl font-bold text-white">$24,580</p>
+            <p className="text-3xl font-bold text-white">
+              {isLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                `$${totalValue.toLocaleString()}`
+              )}
+            </p>
           </div>
         </Card>
 
@@ -145,7 +86,13 @@ export default function DashboardPage() {
               <Badge className="bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30">Available</Badge>
             </div>
             <p className="mb-1 text-sm text-gray-400">Available Credit</p>
-            <p className="text-3xl font-bold text-white">$18,450</p>
+            <p className="text-3xl font-bold text-white">
+              {isLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                `$${Math.floor(availableValue * 0.75).toLocaleString()}`
+              )}
+            </p>
           </div>
         </Card>
 
@@ -197,7 +144,9 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-400">Total Items</p>
                 <Sparkles className="h-5 w-5 text-orange-400" />
               </div>
-              <p className="text-3xl font-bold text-white">{collectibles.length}</p>
+              <p className="text-3xl font-bold text-white">
+                {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : nfts.length}
+              </p>
             </Card>
 
             <Card className="border-white/10 bg-black/40 p-6 backdrop-blur-xl">
@@ -205,7 +154,13 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-400">Total Value</p>
                 <DollarSign className="h-5 w-5 text-cyan-400" />
               </div>
-              <p className="text-3xl font-bold text-white">$40,200</p>
+              <p className="text-3xl font-bold text-white">
+                {isLoading ? (
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                ) : (
+                  `$${totalValue.toLocaleString()}`
+                )}
+              </p>
             </Card>
 
             <Card className="border-white/10 bg-black/40 p-6 backdrop-blur-xl">
@@ -213,7 +168,13 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-400">Available</p>
                 <Badge className="bg-green-500/20 text-green-400">{availableCount}</Badge>
               </div>
-              <p className="text-3xl font-bold text-white">$27,700</p>
+              <p className="text-3xl font-bold text-white">
+                {isLoading ? (
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                ) : (
+                  `$${availableValue.toLocaleString()}`
+                )}
+              </p>
             </Card>
 
             <Card className="border-white/10 bg-black/40 p-6 backdrop-blur-xl">
@@ -253,8 +214,35 @@ export default function DashboardPage() {
           </Card>
 
           {/* Collection Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCollectibles.map((item) => (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <Loader2 className="mx-auto h-12 w-12 animate-spin text-orange-500" />
+                <p className="mt-4 text-gray-400">Cargando NFTs...</p>
+              </div>
+            </div>
+          ) : filteredCollectibles.length === 0 ? (
+            <Card className="border-white/10 bg-black/40 p-12 backdrop-blur-xl">
+              <div className="text-center">
+                <Sparkles className="mx-auto h-16 w-16 text-orange-500/50" />
+                <h3 className="mt-4 text-2xl font-bold text-white">No tienes NFTs aún</h3>
+                <p className="mt-2 text-gray-400">
+                  {filter === "all" 
+                    ? "Comienza tokenizando tu primer coleccionable"
+                    : `No tienes NFTs con el filtro "${filter}"`
+                  }
+                </p>
+                <Link href="/dashboard/tokenize">
+                  <Button className="mt-6 bg-orange-500 text-white hover:bg-orange-600">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Tokenizar Coleccionable
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredCollectibles.map((item) => (
               <Card
                 key={item.id}
                 className="group overflow-hidden border-white/10 bg-black/40 backdrop-blur-xl transition-all duration-300 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/20"
@@ -307,19 +295,21 @@ export default function DashboardPage() {
                     {item.status === "available" ? (
                       <>
                         <Button className="flex-1 bg-orange-500 text-white hover:bg-orange-600">Get Loan</Button>
-                        {item.tokenized ? (
+                        {item.tokenized && item.transactionHash ? (
                           <Button
                             variant="outline"
                             className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/10"
+                            onClick={() => window.open(`https://voyager.online/tx/${item.transactionHash}`, '_blank')}
                           >
-                            View NFT
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            Ver en Voyager
                           </Button>
                         ) : (
                           <Button
                             variant="outline"
                             className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/10"
                           >
-                            Details
+                            Detalles
                           </Button>
                         )}
                       </>
@@ -337,8 +327,9 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
       </div>
     </div>
   )

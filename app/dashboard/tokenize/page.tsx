@@ -14,10 +14,14 @@ import { useNearMintNFT } from "@/hooks/use-nearmint-nft"
 import { useWallet } from "@/contexts/wallet-context"
 import { PinDialog } from "@/components/pin-dialog"
 import { toast } from "sonner"
+import { useUserNFTs } from "@/hooks/use-user-nfts"
+import { IPFSUploader } from "@/components/ipfs-uploader"
+import { UploadResult } from "@/hooks/use-ipfs-upload"
 
 export default function TokenizePage() {
   const [step, setStep] = useState(1)
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
+  const [ipfsImages, setIpfsImages] = useState<UploadResult[]>([])
   const [reverseImage, setReverseImage] = useState<string>("")
   const [itemDetails, setItemDetails] = useState({
     name: "",
@@ -37,6 +41,21 @@ export default function TokenizePage() {
   // Hooks para tokenización real
   const { address, isConnected } = useWallet()
   const { mintNFT, isLoading: mintLoading, error: mintError } = useNearMintNFT()
+  const { addNFT } = useUserNFTs()
+
+  // Manejar subida de imágenes a IPFS
+  const handleIPFSUploadComplete = (results: UploadResult[]) => {
+    setIpfsImages(results)
+    
+    // Actualizar también las URLs locales para preview
+    const localUrls = results
+      .filter(result => result.success && result.ipfsUrl)
+      .map(result => result.ipfsUrl!)
+    
+    setUploadedImages(localUrls)
+    
+    toast.success(`${results.filter(r => r.success).length} imágenes subidas a IPFS exitosamente`)
+  }
 
   // Función para manejar la tokenización con PIN
   const handlePinSubmit = async (pin: string) => {
@@ -59,6 +78,34 @@ export default function TokenizePage() {
         transactionHash: result.transactionHash,
         metadata: pendingTokenization.metadata
       })
+      
+      // Guardar NFT en Clerk metadata
+      try {
+        // Usar imagen de IPFS si está disponible, sino usar placeholder
+        const imageUrl = ipfsImages.length > 0 && ipfsImages[0].success 
+          ? ipfsImages[0].ipfsUrl!
+          : uploadedImages[0] || "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=800"
+
+        await addNFT({
+          tokenId: result.tokenId!,
+          name: itemDetails.name,
+          category: itemDetails.category,
+          value: itemDetails.estimatedValue,
+          image: imageUrl,
+          status: "available",
+          rarity: itemDetails.condition === "Near Mint" ? "Legendary" : itemDetails.condition === "Mint" ? "Mythic" : "Rare",
+          acquired: new Date().toISOString().split('T')[0],
+          appreciation: "+0%",
+          tokenized: true,
+          transactionHash: result.transactionHash,
+          description: itemDetails.description,
+          condition: itemDetails.condition,
+        })
+        console.log('✅ NFT guardado en Clerk metadata')
+      } catch (metadataError) {
+        console.error('❌ Error guardando en Clerk metadata:', metadataError)
+        // No fallar el mint si falla guardar metadata
+      }
       
       toast.success(`NFT creado exitosamente! Token ID: ${result.tokenId}`)
       setPendingTokenization(null)
@@ -119,55 +166,37 @@ export default function TokenizePage() {
       {step === 1 && (
         <div className="grid gap-6 lg:grid-cols-2">
           <Card className="border-white/10 bg-black/40 p-8 backdrop-blur-xl">
-            <h2 className="mb-6 text-2xl font-bold text-white">Upload Photos</h2>
-
-            {/* Front Photo Upload */}
-            <div className="mb-6">
-              <h3 className="mb-3 text-lg font-semibold text-white">Front Photo</h3>
-              <div className="rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-8 text-center transition-all duration-300 hover:border-orange-500/50 hover:bg-white/10">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20">
-                  <Camera className="h-6 w-6 text-orange-400" />
-                </div>
-                <h4 className="mb-2 text-sm font-semibold text-white">Upload front photo</h4>
-                <p className="mb-4 text-xs text-gray-400">Support for JPG, PNG up to 10MB</p>
-                <Button className="bg-orange-500 text-white hover:bg-orange-600">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Choose File
-                </Button>
-              </div>
-            </div>
-
-            {/* Reverse Photo Upload */}
-            <div className="mb-6">
-              <h3 className="mb-3 text-lg font-semibold text-white">Reverse Photo</h3>
-              <div className="rounded-xl border-2 border-dashed border-white/20 bg-white/5 p-8 text-center transition-all duration-300 hover:border-orange-500/50 hover:bg-white/10">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20">
-                  <Camera className="h-6 w-6 text-orange-400" />
-                </div>
-                <h4 className="mb-2 text-sm font-semibold text-white">Upload reverse photo</h4>
-                <p className="mb-4 text-xs text-gray-400">Support for JPG, PNG up to 10MB</p>
-                <Button className="bg-orange-500 text-white hover:bg-orange-600">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Choose File
-                </Button>
-              </div>
-            </div>
+            <h2 className="mb-6 text-2xl font-bold text-white">Subir Imágenes a IPFS</h2>
+            <p className="mb-6 text-gray-400">
+              Las imágenes se almacenan de forma descentralizada en IPFS para garantizar 
+              la permanencia y accesibilidad de tu NFT.
+            </p>
+            
+            <IPFSUploader 
+              onUploadComplete={handleIPFSUploadComplete}
+              maxFiles={3}
+              maxSize={10}
+              className="text-white"
+            />
 
             {/* Preview Grid */}
             {(uploadedImages.length > 0 || reverseImage) && (
-              <div className="grid grid-cols-2 gap-4">
-                {uploadedImages.length > 0 && (
-                  <div className="relative aspect-square overflow-hidden rounded-lg">
-                    <Image src={uploadedImages[0] || "/placeholder.svg"} alt="Front" fill className="object-cover" />
-                    <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white">Front</div>
-                  </div>
-                )}
-                {reverseImage && (
-                  <div className="relative aspect-square overflow-hidden rounded-lg">
-                    <Image src={reverseImage || "/placeholder.svg"} alt="Reverse" fill className="object-cover" />
-                    <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white">Reverse</div>
-                  </div>
-                )}
+              <div className="mt-6">
+                <h3 className="mb-4 text-lg font-semibold text-white">Vista Previa</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {uploadedImages.length > 0 && (
+                    <div className="relative aspect-square overflow-hidden rounded-lg">
+                      <Image src={uploadedImages[0] || "/placeholder.svg"} alt="Front" fill className="object-cover" />
+                      <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white">Front</div>
+                    </div>
+                  )}
+                  {reverseImage && (
+                    <div className="relative aspect-square overflow-hidden rounded-lg">
+                      <Image src={reverseImage || "/placeholder.svg"} alt="Reverse" fill className="object-cover" />
+                      <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-xs text-white">Reverse</div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </Card>
