@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useUser, useAuth } from "@clerk/nextjs"
 import { useCreateWallet } from "@chipi-stack/nextjs"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -162,8 +163,14 @@ export default function CreatePinPage() {
             {/* Header */}
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/40 animate-bounce">
-                  <Shield className="text-primary-foreground w-8 h-8" />
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl shadow-primary/40 animate-bounce">
+                  <Image
+                    src="/images/logo-nearmint.png"
+                    alt="NearMint Logo"
+                    width={64}
+                    height={64}
+                    className="object-contain"
+                  />
                 </div>
               </div>
               <h1 className="text-4xl font-bold text-foreground mb-3">

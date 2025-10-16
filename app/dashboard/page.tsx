@@ -24,7 +24,6 @@ import {
 import Image from "next/image"
 import { useUserNFTs } from "@/hooks/use-user-nfts"
 import Link from "next/link"
-import { LoanDashboardWidget } from "@/components/loan-dashboard-widget"
 
 export default function DashboardPage() {
   const [filter, setFilter] = useState("all")
@@ -130,10 +129,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Loan Dashboard Widget */}
-      <div className="mb-8">
-        <LoanDashboardWidget />
-      </div>
 
       {/* Main Content */}
       <div className="space-y-6">

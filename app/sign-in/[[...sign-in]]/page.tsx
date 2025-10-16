@@ -1,4 +1,5 @@
 import { SignIn } from '@clerk/nextjs'
+import Image from 'next/image'
 
 export default function SignInPage() {
   return (
@@ -10,8 +11,14 @@ export default function SignInPage() {
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 transition-smooth">
-              <span className="text-primary-foreground font-bold text-2xl">NM</span>
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-2xl shadow-primary/40 hover:scale-110 transition-smooth">
+              <Image
+                src="/images/logo-nearmint.png"
+                alt="NearMint Logo"
+                width={56}
+                height={56}
+                className="object-contain"
+              />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-accent to-success bg-clip-text text-transparent">
               NearMint

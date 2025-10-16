@@ -49,8 +49,14 @@ export default function Home() {
       <header className="border-b border-border/50 bg-background/95 backdrop-blur-md sticky top-0 z-50 transition-smooth">
         <div className="container mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-smooth hover:scale-105">
-              <span className="text-primary-foreground font-bold text-lg">NM</span>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-smooth hover:scale-105">
+              <Image
+                src="/images/logo-nearmint.png"
+                alt="NearMint Logo"
+                width={44}
+                height={44}
+                className="object-contain"
+              />
             </div>
             <span className="text-foreground font-bold text-2xl">NearMint</span>
           </div>

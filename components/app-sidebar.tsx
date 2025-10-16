@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useUser, useClerk } from "@clerk/nextjs"
 import { cn } from "@/lib/utils"
@@ -33,9 +34,15 @@ export function AppSidebar() {
   return (
     <div className="flex h-screen w-64 flex-col border-r border-white/10 bg-black/40 backdrop-blur-xl">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-white/10 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-orange-600">
-          <Sparkles className="h-5 w-5 text-white" />
+      <div className="flex h-16 items-center gap-3 border-b border-white/10 px-6">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg">
+          <Image
+            src="/images/logo-nearmint.png"
+            alt="NearMint Logo"
+            width={38}
+            height={38}
+            className="object-contain"
+          />
         </div>
         <span className="text-xl font-bold text-white">NearMint</span>
       </div>
